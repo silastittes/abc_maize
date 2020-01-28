@@ -1,0 +1,87 @@
+function (float)alpha_x(integer sfs_0, integer sfs_4){
+    sz = size(sfs_0);
+    d0 = sfs_0[sz-1];
+    p0 = sfs_0[0:(sz-2)];
+    d4 = sfs_4[sz-1];
+    p4 = sfs_4[0:(sz-2)];
+    alpha = 1 - ((d4 / d0) * (p0 / p4));
+    return alpha;
+}
+
+function(numeric)calc_sfs(integer n_size, object<Mutation> mut_vec, object<Genome> pops, object<Genome> samples){ 
+
+    sfs = rep(0, n_size+1);
+    fixed = 0;
+    for(i in mut_vec){
+        n_count = sum(samples.containsMutations(i));
+        sfs[n_count] =  sfs[n_count] + 1;
+
+        mut_lgl = sum(pops.containsMutations(i));
+        if(sum(mut_lgl) / length(mut_lgl) == 1){
+            fixed = fixed + 1;
+        }
+    }
+    return c(sfs, fixed);
+}
+
+
+initialize(){
+    initializeMutationRate(1e-6);
+    initializeMutationType("m1", 0.5, "f", 0);
+    initializeMutationType("m2", 0.5, "g", -1e-2, 2);
+    initializeMutationType("m3", 0.5, "g", 1e-3, 2);
+    m1.convertToSubstitution = F;
+    m2.convertToSubstitution = F;
+    m3.convertToSubstitution = F;
+    initializeGenomicElementType("g1", c(m1, m2, m3), c(1, 2, 0.2));
+    defineConstant("loci", 100000);
+    initializeGenomicElement(g1, 0, loci-1);
+    initializeRecombinationRate(1e-6);
+}
+
+1 {sim.addSubpop("p1", 1000);}
+
+
+10000 late() {
+
+    n_size = 20;
+    allIndividuals = sim.subpopulations.genomes;
+    sampledIndividuals = sample(allIndividuals, n_size);
+
+    m1_vec = sim.mutations[sim.mutations.mutationType == m1];
+    m2_vec = sim.mutations[sim.mutations.mutationType == m2];
+    m3_vec = sim.mutations[sim.mutations.mutationType == m3];
+
+    sfs_nP = calc_sfs(n_size, m1_vec, allIndividuals, sampledIndividuals);
+    sfs_dP = calc_sfs(n_size, m2_vec, allIndividuals, sampledIndividuals);
+    sfs_sP = calc_sfs(n_size, m3_vec, allIndividuals, sampledIndividuals);
+
+    sfs_n = sfs_nP[0:(length(sfs_nP)-1)];    
+    sfs_d = sfs_dP[0:(length(sfs_dP)-1)];    
+    sfs_s = sfs_sP[0:(length(sfs_sP)-1)];
+
+    print("neutral:");
+    print(sfs_n);
+    print("selected:");
+    print(sfs_d + sfs_s);
+    sfs_S = sfs_d + sfs_s;
+
+    deleteFile("polyDFE_test.txt");
+    line = paste(c("1", "1", size(sfs_d)));
+    writeFile("polyDFE_test.txt", line, append=T);
+    line = paste(c(sfs_n[0:(length(sfs_n)-2)], sum(sfs_n), sfs_n[length(sfs_n)-1], sum(sfs_n)));
+    writeFile("polyDFE_test.txt", line, append=T);
+    line = paste(c(sfs_S[0:(length(sfs_S)-2)], sum(sfs_S), sfs_S[length(sfs_S)-1], sum(sfs_S)));
+    writeFile("polyDFE_test.txt", line, append=T);
+
+    print(alpha_x(sfs_d + sfs_s, sfs_n));
+
+    fn = sfs_nP[length(sfs_nP)-1];    
+    fd = sfs_dP[length(sfs_dP)-1];    
+    fs = sfs_sP[length(sfs_sP)-1];    
+
+    print(paste(c(fn, fd, fs, fs/(fn+fd+fs))));
+
+}
+
+

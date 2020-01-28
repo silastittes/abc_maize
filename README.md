@@ -1,0 +1,1 @@
+Initial attempts at ABC based analysis of Maize demography and selection. Uses SLiM, msprime, tskit, and more. Modifying priors, number of simulations, etc. is all done by modifying the Snakefile. Run with `snakemake -j X`, where X is the desired number of parallel jobs to run. Code to run on hpc coming soon.

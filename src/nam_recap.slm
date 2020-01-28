@@ -1,0 +1,51 @@
+//best estimate of per base mu is 3e-8. Going to use 3e-7
+//best median estimate of recombination is r 1.6e-08 
+//n = 3e-6/3e-8 = 100
+//suggested rescaling is (1/2)*(1 - (1-2*r)^10) ~ 1.6e-7
+
+initialize(){
+    initializeTreeSeq(simplificationRatio=INF);
+    defineConstant("growth_rate", log(N0/Nb)/(B_r + B_t - B_t - 1)); 
+    initializeMutationRate(mu);
+    initializeMutationType("m1", 0.5, "g", gamma_mean, gamma_shape);
+    m1.convertToSubstitution = F;
+    initializeGenomicElementType("g1", m1, 1.0);
+    initializeGenomicElement(g1, 0, loci-1);
+    initializeRecombinationRate(1.6e-7);
+}
+
+1 {
+    sim.addSubpop("p1", Na); 
+    sim.rescheduleScriptBlock(s1, start=B_t-1, end=B_t-1);
+    sim.rescheduleScriptBlock(s2, start=B_t, end=B_t + B_r);
+    sim.rescheduleScriptBlock(s3, start=B_t+B_r, end=B_t + B_r);
+}
+
+s1 late(){
+
+    //print("s1");
+    //print(c(growth_rate, sim.generation, p1.individualCount));
+    p1.setSubpopulationSize(Nb);
+}
+
+s2 late(){
+
+    //print("s2");
+    //print(c(growth_rate, sim.generation, p1.individualCount));
+
+    t = sim.generation - B_t;
+    p1_size = round(Nb * exp(growth_rate * t));
+    p1.setSubpopulationSize(asInteger(p1_size));
+
+    //print(c(growth_rate, sim.generation, p1.individualCount));
+
+}
+
+s3 late() {
+
+    
+    sim.treeSeqOutput(tree_file);
+
+}
+
+
