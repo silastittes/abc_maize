@@ -1,0 +1,13 @@
+{
+    "__default__" :
+    {
+        "p" : "med2",
+        "mem" : "8G",
+        "time" : "01:00:00",
+        "cpus-per-task" : 1,
+        "name" : "{rule}.{wildcards}",
+        "o" : "slurm_log/{rule}.{wildcards}.%j.out",
+        "e" : "slurm_log/{rule}.{wildcards}.%j.err"
+    }
+}
+
