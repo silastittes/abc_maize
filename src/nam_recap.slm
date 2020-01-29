@@ -1,24 +1,184 @@
-//best estimate of per base mu is 3e-8. Going to use 3e-7
+//best estimate of per base mu is 3e-8. Going to use 3e-6
 //best median estimate of recombination is r 1.6e-08 
 //n = 3e-6/3e-8 = 100
 //suggested rescaling is (1/2)*(1 - (1-2*r)^10) ~ 1.6e-7
 
+
+function(numeric)calc_folded(integer nsize, object<Mutation> mut_vec, object<Genome> pops, object<Genome> samples, [logical frequency = T]){
+
+    s_len = nsize + 1;
+    sfs = rep(0, s_len);
+    for(i in mut_vec){
+        n_count = sum(samples.containsMutations(i));
+        n0_count =  s_len - n_count;
+
+        if(n_count >= n0_count){
+            sfs[n0_count] =  sfs[n0_count] + 1;
+        } else{
+            sfs[n_count] =  sfs[n_count] + 1;
+        }
+
+        mut_lgl = sum(pops.containsMutations(i));
+        if(sum(mut_lgl) / length(mut_lgl) == 1 | sum(mut_lgl) / length(mut_lgl) == 0){
+            sfs[0] = sfs[0] + 1;
+        }
+    }
+
+    if(frequency){
+        sfs = sfs/sum(sfs);
+    }
+    return sfs;
+}
+
+function(numeric)dist(numeric sfs){
+
+    sfs_len = length(sfs);
+    dist_vec = rep(0.0, asInteger(sfs_len*(sfs_len - 1)/2));
+    k = 0;
+    for(i in 0:(sfs_len-1)){
+        for(j in 0:(sfs_len-1)){
+            if(j > i){
+                dist_vec[k] = sqrt((sfs[i] - sfs[j])^2);
+                k=k+1;
+            }
+        }
+    }
+    return dist_vec;
+}
+
+
+function(numeric)pi(numeric sfs){
+
+    sfs_len = length(sfs);
+    if(sfs_len % 2 == 0){
+        unfold_len = (sfs_len - 1) * 2;
+    } else {
+        unfold_len = (sfs_len - 1) * 2 - 2;
+    }
+    sfs_cats = 0:(sfs_len - 1);
+    prod_cats = sfs_cats * (unfold_len - sfs_cats);
+    //print(sfs_cats);
+    //print(unfold_len - sfs_cats);
+    pi_num = sum(prod_cats * sfs);
+    return pi_num / (unfold_len*(unfold_len-1)/2);
+}
+
+function(numeric)tajD(numeric sfs, [logical var = T]){
+
+    theta_pi = pi(sfs);
+
+    sfs_len = length(sfs);
+
+    if(sfs_len % 2 == 0){
+        unfold_len = (sfs_len - 1) * 2;
+    } else {
+        unfold_len = (sfs_len - 1) * 2 -1;
+    }
+
+    n = unfold_len - 1;
+
+    seg_sites = sum(sfs[1:(sfs_len-1)]);
+    harmonic = sum(1/1:n);
+    theta_w =  seg_sites/harmonic;
+    //print("theta_w:");
+    //print(theta_w);
+
+    if(var){
+        a1 = harmonic;
+        a2 = sum(1/(1:n)^2);
+
+        b1 = ((n+1)/(3*(n-1)));
+        b2 = (2*(n^2 + n + 3))/(9*n*(n-1));
+
+        c1 = b1 - (1/a1);
+        c2 = b2 - ((n+2)/(a1*n)) + (a2/a1^2);
+
+        e1 = c1/a1;
+        e2 = c2 / (a1^2 + a2);
+
+        S = seg_sites;
+
+        v = sqrt(e1*S + e2*S*(S-1));
+
+        return (theta_pi - theta_w)/v;
+
+    } else {
+        return (theta_pi - theta_w);
+    }
+}
+
+
+function(numeric)sum_stats(integer nsize, object<Mutation> mut_vec, object<Genome> pops, object<Genome> samples, [logical frequency = T]){
+
+    sfs = calc_folded(nsize, mut_vec, pops, samples, frequency);
+
+    n_fold = asInteger(nsize/2);
+
+    sfs_count = sfs[0:(n_fold)];
+
+    //print(sfs_count);
+
+    sfs = sfs_count/sum(sfs_count);
+
+    bins = 1:(n_fold+1);
+
+    weights = sfs*bins;
+
+    bin_dist = dist(sfs);
+
+    wt_dist = dist(weights);
+
+    bin_mean = sum(weights);
+
+    //bin_sd = sqrt(sum(weights)^2 - sum((weights)^2));
+
+    //bin_skew = sum(weights)^3 - sum((weights)^3);
+
+    bin_mean_dist = mean(bin_dist);
+
+    wt_mean_dist = mean(wt_dist);
+
+    bin_sd_dist = sd(bin_dist);
+
+    wt_sd_dist = sd(wt_dist);
+
+    sfs_pi = pi(sfs_count);
+    sfs_pi = sfs_pi/loci;
+
+    sfs_td = tajD(sfs_count);
+    sfs_tdU = tajD(sfs_count, var = F);
+
+    //print("SFS");
+    //print(sfs_count);
+
+    //print("bin_mean bin_mean_dist wt_mean_dist bin_sd_dist wt_sd_dist PI TD");
+
+    return c(bin_mean, bin_mean_dist, wt_mean_dist, bin_sd_dist, wt_sd_dist, sfs_pi, sfs_td);
+
+}
+
+
 initialize(){
-    initializeTreeSeq(simplificationRatio=INF);
-    defineConstant("growth_rate", log(N0/Nb)/(B_r + B_t - B_t - 1)); 
+    //initializeTreeSeq(simplificationRatio=INF); //off for now.
+    defineConstant("Tgen", 10*Na + B_t);
+    defineConstant("growth_rate", log(N0/Nb)/(B_t - 1));
     initializeMutationRate(mu);
-    initializeMutationType("m1", 0.5, "g", gamma_mean, gamma_shape);
-    m1.convertToSubstitution = F;
-    initializeGenomicElementType("g1", m1, 1.0);
+    initializeMutationType("m1", 0.5, "f", 0.0);
+    initializeMutationType("m2", 0.5, "g", sfs1_mean, sfs1_shape);
+    initializeMutationType("m3", 0.5, "g", sfs2_mean, sfs2_shape);
+    m1.convertToSubstitution = T;
+    m2.convertToSubstitution = T;
+    m3.convertToSubstitution = T;
+    initializeGenomicElementType("g1", c(m1, m2, m3), c(p_neutral, p_sfs1, 1-(p_neutral + p_sfs1)));
     initializeGenomicElement(g1, 0, loci-1);
-    initializeRecombinationRate(1.6e-7);
+    initializeRecombinationRate(rr);
 }
 
 1 {
     sim.addSubpop("p1", Na); 
-    sim.rescheduleScriptBlock(s1, start=B_t-1, end=B_t-1);
-    sim.rescheduleScriptBlock(s2, start=B_t, end=B_t + B_r);
-    sim.rescheduleScriptBlock(s3, start=B_t+B_r, end=B_t + B_r);
+    sim.rescheduleScriptBlock(s1, start=2, end=Tgen-B_t-1);
+    sim.rescheduleScriptBlock(s2, start=Tgen-B_t, end=Tgen-1);
+    sim.rescheduleScriptBlock(s3, start=Tgen, end=Tgen);
 }
 
 s1 late(){
@@ -32,19 +192,56 @@ s2 late(){
 
     //print("s2");
     //print(c(growth_rate, sim.generation, p1.individualCount));
-
-    t = sim.generation - B_t;
+    //print(sim.generation - Tgen + B_t);
+    t = sim.generation - Tgen + B_t;
     p1_size = round(Nb * exp(growth_rate * t));
     p1.setSubpopulationSize(asInteger(p1_size));
 
-    //print(c(growth_rate, sim.generation, p1.individualCount));
 
 }
 
 s3 late() {
 
-    
-    sim.treeSeqOutput(tree_file);
+    //print(c(growth_rate, sim.generation, p1.individualCount));
+    //print(calc_folded(n_size, m1_vec, allIndividuals, sampledIndividuals, frequency = F));
+    //print(calc_folded(n_size, m2_vec, allIndividuals, sampledIndividuals, frequency = F));
+    //sim.treeSeqOutput(tree_file);
+    //sampledIndividuals.outputVCF(filePath = "test.vcf", simplifyNucleotides=F);    
+
+    allIndividuals = sim.subpopulations.genomes;
+    sampledIndividuals = sample(allIndividuals, n_size);
+
+    m1_vec = sim.mutations[sim.mutations.mutationType == m1];
+    m2_vec = sim.mutations[sim.mutations.mutationType == m2];
+    m3_vec = sim.mutations[sim.mutations.mutationType == m3];
+
+    print(calc_folded(n_size, m1_vec, allIndividuals, sampledIndividuals, frequency = F));
+    print(calc_folded(n_size, m2_vec, allIndividuals, sampledIndividuals, frequency = F));
+    print(calc_folded(n_size, m3_vec, allIndividuals, sampledIndividuals, frequency = F));
+ 
+    m1_stat = sum_stats(n_size, m1_vec, allIndividuals, sampledIndividuals, frequency = F);
+    m2_stat = sum_stats(n_size, m2_vec, allIndividuals, sampledIndividuals, frequency = F);
+    m3_stat = sum_stats(n_size, m3_vec, allIndividuals, sampledIndividuals, frequency = F);
+
+    st1 = c("bin_mean1", "bin_mean_dist1", "wt_mean_dist1", "bin_sd_dist1", "wt_sd_dist1", "sfs_pi1", "sfs_td1");
+    st2 = c("bin_mean2", "bin_mean_dist2", "wt_mean_dist2", "bin_sd_dist2", "wt_sd_dist2", "sfs_pi2", "sfs_td2");
+    st3 = c("bin_mean3", "bin_mean_dist3", "wt_mean_dist3", "bin_sd_dist3", "wt_sd_dist3", "sfs_pi3", "sfs_td3");
+
+    header_line = paste(c("#Na N0 Nb B_t sfs1_shape sfs1_mean sfs2_shape sfs2_mean p_neutral p_sfs1", st1, st2, st3, "\n"), " ");
+    data_line = paste(c(Na, N0, Nb, B_t, sfs1_shape, abs(sfs1_mean), sfs2_shape, abs(sfs2_mean), p_neutral, p_sfs1, m1_stat, m2_stat, m3_stat, "\n"), " ");
+
+    defineConstant("simID", getSeed());
+    file_out = paste0(c(dir_out, "seed=", simID, "_sample=", asString(n_size), "_loci=", loci, "_mu=", asString(mu), 
+                        "_Na=", asString(Na), "_N0=", asString(N0), "_Nb=", asString(Nb), "_Bt=", asString(B_t), 
+                        "_sfs1shape=", asString(sfs1_shape), "_sfs1mean=", asString(sfs1_mean), 
+                        "_sfs2shape=", asString(sfs2_shape), "_sfs2mean=", asString(sfs2_mean), 
+                        "_pneutral=", asString(p_neutral), "_psfs1=", asString(p_sfs1), "_sumstats.txt"));
+
+    cat(header_line);
+    cat(data_line);
+
+    //writeFile(file_out, header_line, append=F);
+    //writeFile(file_out, data_line, append=T);
 
 }
 

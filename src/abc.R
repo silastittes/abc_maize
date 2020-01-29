@@ -3,34 +3,39 @@ library(tidyverse)
 par(ask=F)
 
 #set.seed(123)
+con <- file("~/Dropbox/NAM_DFE_ABC/pop.txt","r")
+first_line <- readLines(con,n=1)
+close(con)
+col_string <- str_split(first_line, " ")[[1]] %>% str_remove(pattern = "#")
 
-col_string <- str_split("Na N0 Nb Bt Br del_mu gammaShape gammaMean td pi sfs_dist_mean sfs_dist_sd", " ")[[1]]
 full_df <- read_delim(
   "~/Dropbox/NAM_DFE_ABC/pop.txt", delim = " ",
-  col_names = col_string) %>% 
-  mutate(gammaMean = abs(gammaMean)) 
+  col_names = col_string, comment = "#")
 
-pc_sumstat_df <- prcomp(select(full_df, -c(Na, N0, Nb, Bt, Br, del_mu, gammaShape, gammaMean)), center = T, scale. = T)
+pc_sumstat_df <- prcomp(
+  select(full_df, 
+         -c(mu, Na, N0, Nb, B_t, sfs1_shape, sfs1_mean, sfs2_shape, sfs2_mean, p_neutral, p_sfs1)
+         ), 
+  center = T, scale. = T)
 plot(pc_sumstat_df$x[,1], pc_sumstat_df$x[,2])
 (pc_sumstat_df$sdev^2/sum(pc_sumstat_df$sdev^2))
 
-hist(full_df$pi)
+hist(full_df$sfs_pi1)
 abline(v = 0.008)
-summary(full_df$pi)
-hist(full_df$td)
-range(full_df$td)
-#pairs(select(full_df, c(td, pi, sfs_dist_mean, sfs_dist_sd)))
+summary(full_df$sfs_pi1)
+hist(full_df$sfs_td1)
+range(full_df$sfs_td1)
+#pairs(select(full_df, -c(mu, Na, N0, Nb, B_t, sfs1_shape, sfs1_mean, sfs2_shape, sfs2_mean, p_neutral, p_sfs1)))
 cor(full_df)
 
 target_idx <- sample(seq_len(nrow(full_df)), 1)
 target_df <- full_df[target_idx, ]
 full_df <- full_df[-target_idx, ]
 
-
-sumstat_df <- select(full_df, -c(Na, N0, Nb, Bt, Br, del_mu, gammaShape, gammaMean))
-param_df <- select(full_df, c(Na, N0, Nb, Bt, Br, del_mu, gammaShape, gammaMean))
-target_stats <- select(target_df, -c(Na, N0, Nb, Bt, Br, del_mu, gammaShape, gammaMean))
-target_params <- select(target_df, c(Na, N0, Nb, Bt, Br, del_mu, gammaShape, gammaMean))
+sumstat_df <- select(full_df, -c(mu, Na, N0, Nb, B_t, sfs1_shape, sfs1_mean, sfs2_shape, sfs2_mean, p_neutral, p_sfs1))
+param_df <- select(full_df, c(mu, Na, N0, Nb, B_t, sfs1_shape, sfs1_mean, sfs2_shape, sfs2_mean, p_neutral, p_sfs1))
+target_stats <- select(target_df, -c(mu, Na, N0, Nb, B_t, sfs1_shape, sfs1_mean, sfs2_shape, sfs2_mean, p_neutral, p_sfs1))
+target_params <- select(target_df, c(mu, Na, N0, Nb, B_t, sfs1_shape, sfs1_mean, sfs2_shape, sfs2_mean, p_neutral, p_sfs1))
 
 
 res.gfit.bott <- gfit(target=target_stats, 
@@ -38,7 +43,7 @@ res.gfit.bott <- gfit(target=target_stats,
                    statistic=mean, nb.replicate=10)
 summary(res.gfit.bott)$pvalue
 
-res <- abc(target=target_stats, 
+res <- abc(target=target_stats,
            param=param_df,
            sumstat=sumstat_df, 
            tol=0.05, transf=c("log"), method="ridge")
@@ -46,7 +51,7 @@ res <- abc(target=target_stats,
 
 posts_df <- data.frame(res$unadj.values)
 names(posts_df)
-c_name <- "gammaMean"
+c_name <- "N0"
 plot(density(posts_df[[c_name]]))
 
 posts_df[[c_name]]
