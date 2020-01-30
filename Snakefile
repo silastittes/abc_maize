@@ -1,8 +1,6 @@
 import numpy as np
 import random
 
-
-
 #fixed params
 loci = 2000000
 sample = 50
@@ -18,9 +16,9 @@ seeds = np.random.randint(0, int(2**62) - 1, n_draws)
 #low informative prior set
 Na = np.random.randint(500, 2000, n_draws) #ancestral pop size
 N0 = np.random.randint(500, 2000, n_draws) #modern pop size
-Nb = np.array([np.random.randint(10, Na_i, 1)[0] for Na_i in Na]) #instant bottleneck pop size, could be problematic
+Nb = np.random.randint(10, 1000, n_draws) #naive bottle neck prior
+#Nb = np.array([np.random.randint(10, Na_i, 1)[0] for Na_i in Na]) #instant bottleneck pop size, could be problematic
 B_t = np.random.randint(10, 1000, n_draws)  #time after bottleneck, probably a bad prior
-
 #mu = np.random.uniform(1e-8, 1e-6, n_draws).astype(np.half) #deleterious mutation rate
 mut_props = np.random.dirichlet((2, 1, 1), n_draws) #proprotion of mutation types
 p_neutral = mut_props[:,0] #only need first two
