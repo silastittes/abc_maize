@@ -1,34 +1,32 @@
 import numpy as np
 import random
 
-
-
 #fixed params
 loci = 2000000
 sample = 50
 mu = 3e-6
 rr = 1.6e-7
 #priors
-n_draws = 10000
+n_draws = 20000
 random.seed(71415)
 
 #slim -d "dir_out='abc_out/'" -d n_size=50 -d loci=200000 -d mu=3e-6 -d Na=600 -d N0=100 -d Nb=60 -d B_t=2 -d sfs1_shape=2 -d sfs1_mean=-2e-3 -d sfs2_shape=2 -d sfs2_mean=-2e-2 -d p_neutral=0.7 -d p_sfs1=0.2 src/nam_recap.slm
 
 seeds = np.random.randint(0, int(2**62) - 1, n_draws)
 #low informative prior set
-Na = np.random.randint(500, 2000, n_draws) #ancestral pop size
-N0 = np.random.randint(500, 2000, n_draws) #modern pop size
+Na = np.random.randint(100, 2500, n_draws) #ancestral pop size
+N0 = np.random.randint(100, 2500, n_draws) #modern pop size
+#Nb = np.random.randint(10, 500, n_draws) #naive bottle neck prior
 Nb = np.array([np.random.randint(10, Na_i, 1)[0] for Na_i in Na]) #instant bottleneck pop size, could be problematic
-B_t = np.random.randint(10, 1000, n_draws)  #time after bottleneck, probably a bad prior
-
+B_t = np.random.randint(4, 100, n_draws)  #time after bottleneck, probably a bad prior
 #mu = np.random.uniform(1e-8, 1e-6, n_draws).astype(np.half) #deleterious mutation rate
 mut_props = np.random.dirichlet((2, 1, 1), n_draws) #proprotion of mutation types
 p_neutral = mut_props[:,0] #only need first two
 p_sfs1 = mut_props[:,1]
 sfs1_mean = -np.random.uniform(0, 0.1, n_draws).astype(np.half) #DFE negative only!
-sfs1_shape = np.random.randint(2, 10, n_draws).astype(np.half) #DFE positive only!
+sfs1_shape = np.random.uniform(2, 10, n_draws).astype(np.half) #DFE positive only!
 sfs2_mean = -np.random.uniform(0, 0.1, n_draws).astype(np.half) #DFE negative only!
-sfs2_shape = np.random.randint(2, 10, n_draws).astype(np.half) #DFE positive only!
+sfs2_shape = np.random.uniform(2, 10, n_draws).astype(np.half) #DFE positive only!
 
 print(sfs2_shape)
 stats_out = []
