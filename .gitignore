@@ -2,3 +2,4 @@ pop.txt
 abc_out/
 .snakemake/
 playground/
+slurm_log/
