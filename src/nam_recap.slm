@@ -231,7 +231,7 @@ s3 late() {
 
     sfs_all = paste(c("sfs:", c(sfs1, sfs2, sfs3)), "\t");
     param_H = paste(c("paramH:", "Na N0 Nb B_t sfs1_shape sfs1_mean sfs2_shape sfs2_mean p_neutral p_sfs1"), "\t"); 
-    param_D = paste("paramD:", c(Na, N0, Nb, B_t, sfs1_shape, abs(sfs1_mean), sfs2_shape, abs(sfs2_mean), p_neutral, p_sfs1), "\t");
+    param_D = paste(c("paramD:", Na, N0, Nb, B_t, sfs1_shape, abs(sfs1_mean), sfs2_shape, abs(sfs2_mean), p_neutral, p_sfs1), "\t");
 
     cat(sfs_all);
     cat("\n");
