@@ -219,7 +219,7 @@ s3 late() {
     sfs2 = calc_folded(n_size, m2_vec, allIndividuals, sampledIndividuals, frequency = F);
     sfs3 = calc_folded(n_size, m3_vec, allIndividuals, sampledIndividuals, frequency = F);
 
-    sfs_all = paste(c("sfs", c(sfs1, sfs2, sfs3)), " ");
+    sfs_all = paste(c("sfs:", c(sfs1, sfs2, sfs3)), "\t");
     cat(sfs_all);
     cat("\n");
 
