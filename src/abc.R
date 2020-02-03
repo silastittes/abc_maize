@@ -20,13 +20,12 @@ full_df <- read_delim(
 #   select(-c(
 #     "sfs_pi1", "sfs_td1","sfs_pi2", "sfs_td2", "sfs_pi3","sfs_td3"
 #   ))
-
-
 #   select(-c("bin_mean1",      "bin_mean_dist1", "wt_mean_dist1",  "bin_sd_dist1",   "wt_sd_dist1" ,  
 #             "bin_mean2",      "bin_mean_dist2", "wt_mean_dist2",  "bin_sd_dist2",   "wt_sd_dist2" ,  
 #             "bin_mean3",      "bin_mean_dist3", "wt_mean_dist3",  "bin_sd_dist3",   "wt_sd_dist3"
 #             ))
 # names(full_df)
+
 mean(full_df$Na > full_df$Nb)
 plot(full_df$Na, full_df$Nb)
 
@@ -34,7 +33,7 @@ pc_sumstat_df <- prcomp(
   drop_na(select(full_df, 
          -c(Na, N0, Nb, B_t, sfs1_shape, sfs1_mean, sfs2_shape, sfs2_mean, p_neutral, p_sfs1)
   )),
-  center = T, scale. = T)
+  center = F, scale. = T)
 plot(pc_sumstat_df$x[,1], pc_sumstat_df$x[,2])
 (pc_sumstat_df$sdev^2/sum(pc_sumstat_df$sdev^2))
 
@@ -66,19 +65,19 @@ res.gfit.bott <- gfit(target=target_stats,
                    statistic=mean, nb.replicate=10)
 summary(res.gfit.bott)$pvalue
 
-# res <- abc(target=target_stats,
-#            param=param_df,
-#            sumstat=sumstat_df, 
-#            tol=0.01, transf=c("log"), method="ridge")
-
-res <- abc(target=pc_target,
+res <- abc(target=target_stats,
            param=param_df,
-           sumstat=pc_df, 
+           sumstat=sumstat_df,
            tol=0.05, transf=c("log"), method="ridge")
+
+# res <- abc(target=pc_target,
+#            param=param_df,
+#            sumstat=pc_df,
+#            tol=0.05, transf=c("log"), method="neuralnet")
 
 posts_df <- data.frame(res$unadj.values)
 names(posts_df)
-c_name <- "Na"
+c_name <- "N0"
 plot(density(posts_df[[c_name]]))
 
 posts_df[[c_name]]
