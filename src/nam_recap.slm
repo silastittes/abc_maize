@@ -219,10 +219,11 @@ s3 late() {
     sfs2 = calc_folded(n_size, m2_vec, allIndividuals, sampledIndividuals, frequency = F);
     sfs3 = calc_folded(n_size, m3_vec, allIndividuals, sampledIndividuals, frequency = F);
 
-    sfs_all = paste0("sfs: ", c(sfs1, sfs2, sfs3));
- 
-    cat()'
+    sfs_all = paste(c("sfs", c(sfs1, sfs2, sfs3)), " ");
+    cat(sfs_all);
+    cat("\n");
 
+    
     m1_stat = sum_stats(n_size, m1_vec, allIndividuals, sampledIndividuals, frequency = F);
     m2_stat = sum_stats(n_size, m2_vec, allIndividuals, sampledIndividuals, frequency = F);
     m3_stat = sum_stats(n_size, m3_vec, allIndividuals, sampledIndividuals, frequency = F);
@@ -234,13 +235,14 @@ s3 late() {
     header_line = paste(c("#Na N0 Nb B_t sfs1_shape sfs1_mean sfs2_shape sfs2_mean p_neutral p_sfs1", st1, st2, st3, "\n"), " ");
     data_line = paste(c(Na, N0, Nb, B_t, sfs1_shape, abs(sfs1_mean), sfs2_shape, abs(sfs2_mean), p_neutral, p_sfs1, m1_stat, m2_stat, m3_stat, "\n"), " ");
 
+    /*
     defineConstant("simID", getSeed());
     file_out = paste0(c(dir_out, "seed=", simID, "_sample=", asString(n_size), "_loci=", loci, "_mu=", asString(mu), 
                         "_Na=", asString(Na), "_N0=", asString(N0), "_Nb=", asString(Nb), "_Bt=", asString(B_t), 
                         "_sfs1shape=", asString(sfs1_shape), "_sfs1mean=", asString(sfs1_mean), 
                         "_sfs2shape=", asString(sfs2_shape), "_sfs2mean=", asString(sfs2_mean), 
                         "_pneutral=", asString(p_neutral), "_psfs1=", asString(p_sfs1), "_sumstats.txt"));
-
+    */
     cat(header_line);
     cat(data_line);
 
