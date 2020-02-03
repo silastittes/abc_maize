@@ -219,11 +219,7 @@ s3 late() {
     sfs2 = calc_folded(n_size, m2_vec, allIndividuals, sampledIndividuals, frequency = F);
     sfs3 = calc_folded(n_size, m3_vec, allIndividuals, sampledIndividuals, frequency = F);
 
-    sfs_all = paste(c("sfs:", c(sfs1, sfs2, sfs3)), "\t");
-    cat(sfs_all);
-    cat("\n");
-
-    
+   
     m1_stat = sum_stats(n_size, m1_vec, allIndividuals, sampledIndividuals, frequency = F);
     m2_stat = sum_stats(n_size, m2_vec, allIndividuals, sampledIndividuals, frequency = F);
     m3_stat = sum_stats(n_size, m3_vec, allIndividuals, sampledIndividuals, frequency = F);
@@ -232,8 +228,18 @@ s3 late() {
     st2 = c("bin_mean2", "bin_mean_dist2", "wt_mean_dist2", "bin_sd_dist2", "wt_sd_dist2", "sfs_pi2", "sfs_td2");
     st3 = c("bin_mean3", "bin_mean_dist3", "wt_mean_dist3", "bin_sd_dist3", "wt_sd_dist3", "sfs_pi3", "sfs_td3");
 
-    header_line = paste(c("#Na N0 Nb B_t sfs1_shape sfs1_mean sfs2_shape sfs2_mean p_neutral p_sfs1", st1, st2, st3, "\n"), " ");
-    data_line = paste(c(Na, N0, Nb, B_t, sfs1_shape, abs(sfs1_mean), sfs2_shape, abs(sfs2_mean), p_neutral, p_sfs1, m1_stat, m2_stat, m3_stat, "\n"), " ");
+
+    sfs_all = paste(c("sfs:", c(sfs1, sfs2, sfs3)), "\t");
+    param_H = paste(c("paramH:", "Na N0 Nb B_t sfs1_shape sfs1_mean sfs2_shape sfs2_mean p_neutral p_sfs1"), "\t"); 
+    param_D = paste("paramD:", c(Na, N0, Nb, B_t, sfs1_shape, abs(sfs1_mean), sfs2_shape, abs(sfs2_mean), p_neutral, p_sfs1), "\t");
+
+    cat(sfs_all);
+    cat("\n");
+    cat(param_D);
+    cat("\n");
+
+    header_line = paste(c("#Na N0 Nb B_t sfs1_shape sfs1_mean sfs2_shape sfs2_mean p_neutral p_sfs1", st1, st2, st3), " ");
+    data_line = paste(c(Na, N0, Nb, B_t, sfs1_shape, abs(sfs1_mean), sfs2_shape, abs(sfs2_mean), p_neutral, p_sfs1, m1_stat, m2_stat, m3_stat), " ");
 
     /*
     defineConstant("simID", getSeed());
@@ -244,6 +250,7 @@ s3 late() {
                         "_pneutral=", asString(p_neutral), "_psfs1=", asString(p_sfs1), "_sumstats.txt"));
     */
     cat(header_line);
+    cat("\n");
     cat(data_line);
 
     //writeFile(file_out, header_line, append=F);
