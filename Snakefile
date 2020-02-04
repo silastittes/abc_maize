@@ -2,7 +2,7 @@ import numpy as np
 import random
 
 #fixed params
-loci = 20000000
+loci = 2000000
 sample = 50
 mu = 3e-6
 rr = 1.6e-7

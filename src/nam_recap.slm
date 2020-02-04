@@ -118,7 +118,7 @@ function(numeric)sum_stats(integer nsize, object<Mutation> mut_vec, object<Genom
 
     //print(sfs_count);
 
-    sfs = sfs_count; //sum(sfs_count); //!!!
+    sfs = sfs_count; sum(sfs_count); //!!!
 
     bins = 1:(n_fold+1);
 

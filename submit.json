@@ -3,7 +3,7 @@
     {
         "p" : "med2",
         "mem" : "6G",
-        "time" : "06:00:00",
+        "time" : "03:00:00",
         "cpus-per-task" : 1,
         "name" : "{rule}.{wildcards}",
         "o" : "slurm_log/{rule}.{wildcards}.%j.out",
