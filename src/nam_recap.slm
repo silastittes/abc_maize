@@ -240,6 +240,7 @@ s3 late() {
     param_H = paste(c("paramH:", "Na N0 Nb B_t sfs1_shape sfs1_mean sfs2_shape sfs2_mean p_neutral p_sfs1"), "\t"); 
     param_D = paste(c("paramD:", Na, N0, Nb, B_t, sfs1_shape, abs(sfs1_mean), sfs2_shape, abs(sfs2_mean), p_neutral, p_sfs1), "\t");
 
+    cat("\n");
     cat(sfs_all);
     cat("\n");
     cat(param_D);
@@ -248,17 +249,11 @@ s3 late() {
     header_line = paste(c("#Na N0 Nb B_t sfs1_shape sfs1_mean sfs2_shape sfs2_mean p_neutral p_sfs1", st1, st2, st3, st4), " ");
     data_line = paste(c(Na, N0, Nb, B_t, sfs1_shape, abs(sfs1_mean), sfs2_shape, abs(sfs2_mean), p_neutral, p_sfs1, m1_stat, m2_stat, m3_stat, m4_stat), " ");
 
-    /*
-    defineConstant("simID", getSeed());
-    file_out = paste0(c(dir_out, "seed=", simID, "_sample=", asString(n_size), "_loci=", loci, "_mu=", asString(mu), 
-                        "_Na=", asString(Na), "_N0=", asString(N0), "_Nb=", asString(Nb), "_Bt=", asString(B_t), 
-                        "_sfs1shape=", asString(sfs1_shape), "_sfs1mean=", asString(sfs1_mean), 
-                        "_sfs2shape=", asString(sfs2_shape), "_sfs2mean=", asString(sfs2_mean), 
-                        "_pneutral=", asString(p_neutral), "_psfs1=", asString(p_sfs1), "_sumstats.txt"));
-    */
+    cat("\n");
     cat(header_line);
     cat("\n");
     cat(data_line);
+    cat("\n");
 
     //writeFile(file_out, header_line, append=F);
     //writeFile(file_out, data_line, append=T);
