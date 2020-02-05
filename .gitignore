@@ -5,3 +5,4 @@ abc_out/
 .snakemake/
 playground/
 slurm_log/
+paramDF.txt
