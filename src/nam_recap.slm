@@ -157,14 +157,6 @@ function(numeric)sum_stats(integer nsize, object<Mutation> mut_vec, object<Genom
 
 }
 
-function(numeric)sfs2sumstat(integer nsize, mut_type, object<Genome> pops, object<Genome> samples, [logical frequency = T]){
-
-    m_vec = sim.mutations[sim.mutations.mutationType == m];
-    sfs = calc_folded(n_size, m_vec, allIndividuals, sampledIndividuals, frequency = frequency);
-    m_stat = sum_stats(n_size, m_vec, allIndividuals, sampledIndividuals, frequency = frequency);
-    retun m_stat;
-}
-
 
 initialize(){
     //initializeTreeSeq(simplificationRatio=INF); //off for now.
@@ -179,7 +171,7 @@ initialize(){
     m2.convertToSubstitution = T;
     m3.convertToSubstitution = T;
     initializeGenomicElementType("g1", c(m2, m3, m4), c(p_neutral, p_sfs1, 1-(p_neutral + p_sfs1)));
-    initializeGenomicElementType("g2", m2, 1.0);
+    initializeGenomicElementType("g2", m1, 1.0);
     initializeGenomicElement(g2, 0, loci-1);
     initializeGenomicElement(g1, loci, 2*loci-1);
     rates = c(rr, 0.5, rr);
