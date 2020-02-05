@@ -157,20 +157,29 @@ function(numeric)sum_stats(integer nsize, object<Mutation> mut_vec, object<Genom
 
 }
 
+function(numeric)sfs2sumstat(integer nsize, mut_type, object<Genome> pops, object<Genome> samples, [logical frequency = T]){
+
+    m_vec = sim.mutations[sim.mutations.mutationType == m];
+    sfs = calc_folded(n_size, m_vec, allIndividuals, sampledIndividuals, frequency = frequency);
+    m_stat = sum_stats(n_size, m_vec, allIndividuals, sampledIndividuals, frequency = frequency);
+    retun m_stat;
+}
+
 
 initialize(){
     //initializeTreeSeq(simplificationRatio=INF); //off for now.
     defineConstant("Tgen", 10*Na + B_t);
     defineConstant("growth_rate", log(N0/Nb)/(B_t - 1));
     initializeMutationRate(mu);
-    initializeMutationType("m1", 0.5, "f", 0.0);
-    initializeMutationType("m2", 0.5, "g", sfs1_mean, sfs1_shape);
-    initializeMutationType("m3", 0.5, "g", sfs2_mean, sfs2_shape);
+    initializeMutationType("m1", 0.5, "f", 0.0); //second kind of neutral
+    initializeMutationType("m2", 0.5, "f", 0.0);
+    initializeMutationType("m3", 0.5, "g", sfs1_mean, sfs1_shape);
+    initializeMutationType("m4", 0.5, "g", sfs2_mean, sfs2_shape);
     m1.convertToSubstitution = T;
     m2.convertToSubstitution = T;
     m3.convertToSubstitution = T;
-    initializeGenomicElementType("g1", c(m1, m2, m3), c(p_neutral, p_sfs1, 1-(p_neutral + p_sfs1)));
-    initializeGenomicElementType("g2", m1, 1.0);
+    initializeGenomicElementType("g1", c(m2, m3, m4), c(p_neutral, p_sfs1, 1-(p_neutral + p_sfs1)));
+    initializeGenomicElementType("g2", m2, 1.0);
     initializeGenomicElement(g2, 0, loci-1);
     initializeGenomicElement(g1, loci, 2*loci-1);
     rates = c(rr, 0.5, rr);
@@ -218,22 +227,24 @@ s3 late() {
     m1_vec = sim.mutations[sim.mutations.mutationType == m1];
     m2_vec = sim.mutations[sim.mutations.mutationType == m2];
     m3_vec = sim.mutations[sim.mutations.mutationType == m3];
+    m4_vec = sim.mutations[sim.mutations.mutationType == m4];
 
     sfs1 = calc_folded(n_size, m1_vec, allIndividuals, sampledIndividuals, frequency = F);
     sfs2 = calc_folded(n_size, m2_vec, allIndividuals, sampledIndividuals, frequency = F);
     sfs3 = calc_folded(n_size, m3_vec, allIndividuals, sampledIndividuals, frequency = F);
-
+    sfs4 = calc_folded(n_size, m4_vec, allIndividuals, sampledIndividuals, frequency = F);
    
     m1_stat = sum_stats(n_size, m1_vec, allIndividuals, sampledIndividuals, frequency = F);
     m2_stat = sum_stats(n_size, m2_vec, allIndividuals, sampledIndividuals, frequency = F);
     m3_stat = sum_stats(n_size, m3_vec, allIndividuals, sampledIndividuals, frequency = F);
+    m4_stat = sum_stats(n_size, m4_vec, allIndividuals, sampledIndividuals, frequency = F);
 
     st1 = c("bin_mean1", "bin_mean_dist1", "wt_mean_dist1", "bin_sd_dist1", "wt_sd_dist1", "sfs_pi1", "sfs_td1");
     st2 = c("bin_mean2", "bin_mean_dist2", "wt_mean_dist2", "bin_sd_dist2", "wt_sd_dist2", "sfs_pi2", "sfs_td2");
     st3 = c("bin_mean3", "bin_mean_dist3", "wt_mean_dist3", "bin_sd_dist3", "wt_sd_dist3", "sfs_pi3", "sfs_td3");
+    st4 = c("bin_mean4", "bin_mean_dist4", "wt_mean_dist4", "bin_sd_dist4", "wt_sd_dist4", "sfs_pi4", "sfs_td4");
 
-
-    sfs_all = paste(c("sfs:", c(sfs1, sfs2, sfs3)), "\t");
+    sfs_all = paste(c("sfs:", c(sfs1, sfs2, sfs3, sfs4)), "\t");
     param_H = paste(c("paramH:", "Na N0 Nb B_t sfs1_shape sfs1_mean sfs2_shape sfs2_mean p_neutral p_sfs1"), "\t"); 
     param_D = paste(c("paramD:", Na, N0, Nb, B_t, sfs1_shape, abs(sfs1_mean), sfs2_shape, abs(sfs2_mean), p_neutral, p_sfs1), "\t");
 
@@ -242,8 +253,8 @@ s3 late() {
     cat(param_D);
     cat("\n");
 
-    header_line = paste(c("#Na N0 Nb B_t sfs1_shape sfs1_mean sfs2_shape sfs2_mean p_neutral p_sfs1", st1, st2, st3), " ");
-    data_line = paste(c(Na, N0, Nb, B_t, sfs1_shape, abs(sfs1_mean), sfs2_shape, abs(sfs2_mean), p_neutral, p_sfs1, m1_stat, m2_stat, m3_stat), " ");
+    header_line = paste(c("#Na N0 Nb B_t sfs1_shape sfs1_mean sfs2_shape sfs2_mean p_neutral p_sfs1", st1, st2, st3, st4), " ");
+    data_line = paste(c(Na, N0, Nb, B_t, sfs1_shape, abs(sfs1_mean), sfs2_shape, abs(sfs2_mean), p_neutral, p_sfs1, m1_stat, m2_stat, m3_stat, m4_stat), " ");
 
     /*
     defineConstant("simID", getSeed());

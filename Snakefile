@@ -8,7 +8,7 @@ mu = 3e-6
 rr = 1.6e-7
 #priors
 n_draws = 5000
-random.seed(11415)
+random.seed(214125)
 
 #slim -d "dir_out='abc_out/'" -d n_size=50 -d loci=200000 -d mu=3e-6 -d Na=600 -d N0=100 -d Nb=60 -d B_t=2 -d sfs1_shape=2 -d sfs1_mean=-2e-3 -d sfs2_shape=2 -d sfs2_mean=-2e-2 -d p_neutral=0.7 -d p_sfs1=0.2 src/nam_recap.slm
 
