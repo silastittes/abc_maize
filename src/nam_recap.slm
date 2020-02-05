@@ -170,8 +170,12 @@ initialize(){
     m2.convertToSubstitution = T;
     m3.convertToSubstitution = T;
     initializeGenomicElementType("g1", c(m1, m2, m3), c(p_neutral, p_sfs1, 1-(p_neutral + p_sfs1)));
-    initializeGenomicElement(g1, 0, loci-1);
-    initializeRecombinationRate(rr);
+    initializeGenomicElementType("g2", m1, 1.0);
+    initializeGenomicElement(g2, 0, loci-1);
+    initializeGenomicElement(g1, loci, 2*loci-1);
+    rates = c(rr, 0.5, rr);
+    ends = c(loci-1, loci, 2*loci-1);
+    initializeRecombinationRate(rates, ends);
 }
 
 1 {

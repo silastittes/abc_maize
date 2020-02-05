@@ -1,5 +1,6 @@
 pop.txt
 pop_sfs.txt
+paramDF.txt
 pop_capNB.txt
 abc_out/
 .snakemake/

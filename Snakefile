@@ -2,33 +2,33 @@ import numpy as np
 import random
 
 #fixed params
-loci = 2000000
+loci = 20000000
 sample = 50
 mu = 3e-6
 rr = 1.6e-7
 #priors
 n_draws = 5000
-random.seed(71415)
+random.seed(11415)
 
 #slim -d "dir_out='abc_out/'" -d n_size=50 -d loci=200000 -d mu=3e-6 -d Na=600 -d N0=100 -d Nb=60 -d B_t=2 -d sfs1_shape=2 -d sfs1_mean=-2e-3 -d sfs2_shape=2 -d sfs2_mean=-2e-2 -d p_neutral=0.7 -d p_sfs1=0.2 src/nam_recap.slm
 
 seeds = np.random.randint(0, int(2**62) - 1, n_draws)
 #low informative prior set
-Na = np.random.randint(100, 2500, n_draws) #ancestral pop size
-N0 = np.random.randint(100, 2500, n_draws) #modern pop size
+Na = np.random.randint(100, 1500, n_draws) #ancestral pop size
+N0 = np.random.randint(100, 1500, n_draws) #modern pop size
 #Nb = np.random.randint(10, 500, n_draws) #naive bottle neck prior
 Nb = np.array([np.random.randint(10, Na_i, 1)[0] for Na_i in Na]) #instant bottleneck pop size, could be problematic
-B_t = np.random.randint(4, 100, n_draws)  #time after bottleneck, probably a bad prior
+B_t = np.random.randint(10, 500, n_draws)  #time after bottleneck, probably a bad prior
 #mu = np.random.uniform(1e-8, 1e-6, n_draws).astype(np.half) #deleterious mutation rate
 mut_props = np.random.dirichlet((2, 1, 1), n_draws) #proprotion of mutation types
 p_neutral = mut_props[:,0] #only need first two
 p_sfs1 = mut_props[:,1]
-sfs1_mean = -np.random.uniform(0, 0.1, n_draws).astype(np.half) #DFE negative only!
-sfs1_shape = np.random.uniform(2, 10, n_draws).astype(np.half) #DFE positive only!
-sfs2_mean = -np.random.uniform(0, 0.1, n_draws).astype(np.half) #DFE negative only!
-sfs2_shape = np.random.uniform(2, 10, n_draws).astype(np.half) #DFE positive only!
+sfs1_mean = -np.random.uniform(0, 0.01, n_draws).astype(np.half) #DFE negative only!
+sfs1_shape = np.random.uniform(2, 100, n_draws).astype(np.half) #DFE positive only!
+sfs2_mean = -np.random.uniform(0, 0.01, n_draws).astype(np.half) #DFE negative only!
+sfs2_shape = np.random.uniform(2, 100, n_draws).astype(np.half) #DFE positive only!
 
-print(sfs2_shape)
+#print(sfs2_shape)
 stats_out = []
 
 #params_file = open("abc_out/nam_abc_params.txt", "w")
@@ -51,7 +51,6 @@ rule run_slim:
     output:
         "abc_out/seed__{seeds}_Na__{Na}_N0__{N0}_Nb__{Nb}_Bt__{B_t}_sfs1shape__{sfs1_shape}_sfs1mean__{sfs1_mean}_sfs2shape__{sfs2_shape}_sfs2mean__{sfs2_mean}_pneutral__{p_neutral}_psfs1__{p_sfs1}_sumstats.txt"
     params:
-        dir_out = "abc_out/",
         seeds = "{seeds}" ,
         Na = "{Na}", N0 = "{N0}",Nb = "{Nb}", Bt = "{B_t}",
         sfs1shape="{sfs1_shape}", sfs1mean="{sfs1_mean}", 
@@ -59,7 +58,7 @@ rule run_slim:
         pneutral="{p_neutral}", psfs1="{p_sfs1}"
     shell:
         """
-        slim -s {params.seeds} -define 'dir_out="{params.dir_out}"' -define rr={rr} \
+        slim -s {params.seeds} -define rr={rr} \
         -define n_size={sample} -define loci={loci} -define mu={mu} \
         -define Na={params.Na} -define N0={params.N0} -define Nb={params.Nb} -define B_t={params.Bt} \
         -define sfs1_shape={params.sfs1shape} -define sfs1_mean={params.sfs1mean} -define sfs2_shape={params.sfs2shape} -define sfs2_mean={params.sfs2mean} \
