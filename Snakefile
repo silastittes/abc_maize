@@ -15,8 +15,8 @@ random.seed(214125)
 
 seeds = np.random.randint(0, int(2**62) - 1, n_draws)
 #low informative prior set
-Na = 5000 #ancestral pop size
-N0 = np.random.randint(Na, 20*Na, n_draws) #modern pop size
+Na = 1000 #ancestral pop size
+N0 = np.random.randint(Na, 10*Na, n_draws) #modern pop size
 Nb = np.random.randint(0.05*Na, Na, n_draws) #instant bottleneck pop size
 B_t = int(0.067*Na)  #time after bottleneck
 mut_props = np.random.dirichlet((2, 1, 1), n_draws) #proportion of mutation types
