@@ -2,8 +2,8 @@
     "__default__" :
     {
         "p" : "med2",
-        "mem" : "6G",
-        "time" : "05:00:00",
+        "mem" : "8G",
+        "time" : "10:00:00",
         "cpus-per-task" : 1,
         "name" : "{rule}.{wildcards}",
         "o" : "slurm_log/{rule}.{wildcards}.%j.out",

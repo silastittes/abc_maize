@@ -1,7 +1,7 @@
 //best estimate of per base mu is 3e-8. Going to use 3e-6
 //best median estimate of recombination is r 1.6e-08 
 //n = 3e-6/3e-8 = 100
-//suggested rescaling is (1/2)*(1 - (1-2*r)^10) ~ 1.6e-7
+//suggested rescaling is (1/2)*(1 - (1-2*r)^100) ~ 1.6e-6
 
 
 function(numeric)calc_folded(integer nsize, object<Mutation> mut_vec, object<Genome> pops, object<Genome> samples, [logical frequency = T]){

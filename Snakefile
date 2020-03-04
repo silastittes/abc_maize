@@ -5,7 +5,7 @@ import random
 loci = 2000000
 sample = 26*2 #DOUBLE CHECK THIS!!!! WHAT SAMPLES ARE PRESENT IN WHAT VCFS IS CONFUSING!
 mu = 3e-6
-rr = 1.6e-7
+rr = 1.6e-6
 
 #priors
 n_draws = 10
@@ -16,10 +16,10 @@ random.seed(214125)
 seeds = np.random.randint(0, int(2**62) - 1, n_draws)
 #low informative prior set
 Na = 5000 #ancestral pop size
-N0 = np.random.randint(100, 20*Na, n_draws) #modern pop size
+N0 = np.random.randint(Na, 20*Na, n_draws) #modern pop size
 Nb = np.random.randint(0.05*Na, Na, n_draws) #instant bottleneck pop size
-B_t = 0.067*Na  #time after bottleneck
-mut_props = np.random.dirichlet((2, 1, 1), n_draws) #proprotion of mutation types
+B_t = int(0.067*Na)  #time after bottleneck
+mut_props = np.random.dirichlet((2, 1, 1), n_draws) #proportion of mutation types
 p_neutral = mut_props[:,0] #only need first two
 p_sfs1 = mut_props[:,1]
 sfs1_mean = -np.random.uniform(0, 0.01, n_draws).astype(np.half) #DFE negative only!
