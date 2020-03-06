@@ -3,23 +3,24 @@ import random
 
 #fixed params
 loci = 2000000
-sample = 26*2 #DOUBLE CHECK THIS!!!! WHAT SAMPLES ARE PRESENT IN WHAT VCFS IS CONFUSING!
+sample = 26
 mu = 3e-6
 rr = 1.6e-6
 
 #priors
-n_draws = 10
-random.seed(214125)
+n_draws = 100000
 
+#random.seed(214125) #random seed per sim is reported, so no reason to make this stage reproducible afaikt
 #slim -d "dir_out='abc_out/'" -d n_size=50 -d loci=200000 -d mu=3e-6 -d Na=600 -d N0=100 -d Nb=60 -d B_t=2 -d sfs1_shape=2 -d sfs1_mean=-2e-3 -d sfs2_shape=2 -d sfs2_mean=-2e-2 -d p_neutral=0.7 -d p_sfs1=0.2 src/nam_recap.slm
 
 seeds = np.random.randint(0, int(2**62) - 1, n_draws)
 #low informative prior set
 Na = 1000 #ancestral pop size
-N0 = np.random.randint(Na, 10*Na, n_draws) #modern pop size
+#N0 = np.random.randint(Na, 10*Na, n_draws) #modern pop size
+N0 = np.exp(np.random.uniform(np.log(Na), np.log(20*Na), n_draws)).astype(int)
 Nb = np.random.randint(0.05*Na, Na, n_draws) #instant bottleneck pop size
 B_t = int(0.067*Na)  #time after bottleneck
-mut_props = np.random.dirichlet((2, 1, 1), n_draws) #proportion of mutation types
+mut_props = np.random.dirichlet((3, 2, 1), n_draws) #proportion of mutation types
 p_neutral = mut_props[:,0] #only need first two
 p_sfs1 = mut_props[:,1]
 sfs1_mean = -np.random.uniform(0, 0.01, n_draws).astype(np.half) #DFE negative only!
