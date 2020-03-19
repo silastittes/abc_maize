@@ -99,7 +99,10 @@ s3 late() {
     cat(data_line);
     cat("\n");
 
-    cat(paste(c(n_size, "SFS:", sfs1[2:(size(sfs1)-1)], sfs2[2:(size(sfs2)-1)], sfs3[2:(size(sfs3)-1)], "\n")));
+    //cat(paste(c(n_size, "SFS:", sfs1, sfs2, sfs3, "\n")));
+    //cat(paste(c(n_size, "SFS:", sfs1[0:(size(sfs1)-1)], sfs2[0:(size(sfs2)-1)], sfs3[0:(size(sfs3)-1)], "\n")));
+    cat(paste(c(n_size, "SFS:", sfs1[1:(size(sfs1)-1)], sfs2[1:(size(sfs2)-1)], sfs3[1:(size(sfs3)-1)], "\n")));
+    //cat(paste(c(n_size, "SFS:", sfs1[2:(size(sfs1)-1)], sfs2[2:(size(sfs2)-1)], sfs3[2:(size(sfs3)-1)], "\n")));
     //print(paste(c("sfs2:", sfs2[2:(size(sfs2)-1)])));
     //print(paste(c("sfs3:", sfs3[2:(size(sfs3)-1)])));
 }
