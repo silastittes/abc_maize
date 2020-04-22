@@ -20,7 +20,7 @@ Na = 1000 #ancestral pop size
 N0 = np.exp(np.random.uniform(np.log(Na), np.log(20*Na), n_draws)).astype(int)
 Nb = np.random.randint(0.05*Na, Na, n_draws) #instant bottleneck pop size
 B_t = int(0.067*Na)  #time after bottleneck
-mut_props = np.random.dirichlet((20, 5, 1), n_draws) #proportion of mutation types
+mut_props = np.random.dirichlet((10, 10, 1), n_draws) #proportion of mutation types
 p_neutral = mut_props[:,0] #only need first two
 p_sfs1 = mut_props[:,1]
 sfs1_mean = -np.random.uniform(0, 0.01, n_draws).astype(np.half) #DFE negative only!
@@ -46,7 +46,7 @@ rule all:
 
 rule run_slim:
     input:
-        "src/nam_rawsfs.slim",
+        "src/nam_exons_rawsfs.slim",
     output:
         "abc_out/seed__{seeds}_Na__{Na}_N0__{N0}_Nb__{Nb}_Bt__{B_t}_sfs1shape__{sfs1_shape}_sfs1mean__{sfs1_mean}_sfs2shape__{sfs2_shape}_sfs2mean__{sfs2_mean}_pneutral__{p_neutral}_psfs1__{p_sfs1}_sumstats.txt"
     params:
