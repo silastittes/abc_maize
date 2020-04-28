@@ -1,142 +1,211 @@
 library(abc)
 library(tidyverse)
+library(optparse)
 par(ask=F)
 
-# require(abc.data)
-# data(human)
-# nrow(stat.3pops.sim)
-
-var0 <- function(x) var(x) > 0
-
-full_df <- read_delim(
-  "~/Dropbox/NAM_DFE_ABC/pop_sfs.txt", delim = " ",
-  col_names = FALSE
-) %>%
-  select(- ncol(.)) %>% 
-  select_if(var0) %>% 
-  rowwise() %>% 
-  mutate(sm  = sum(.)) %>%
-  ungroup() %>% 
-  mutate_all(.funs = ~ .x / sm) %>% 
-  select(-sm)
-
-pcx <- prcomp(full_df, scale. = F, center = F)
-
-#plot(pcx)
-#plot(pcx$x[,1], pcx$x[,2])
-varz <- cumsum((pcx$sdev ^ 2) / sum(pcx$sdev ^ 2)) <= 1
-mx_col <- max(c(2,length(varz[varz])))
-pc_df <- data.frame(pcx$x) %>% select(1:mx_col)
-
-
-params <- 
-  c("Na", "N0", "Nb", "B_t", 
-    "sfs1_shape", "sfs1_mean", "sfs2_shape", "sfs2_mean", 
-    "p_neutral", "p_sfs1")
-
-param_df <- read_delim(
-  "~/Dropbox/NAM_DFE_ABC/pop.txt",
-  col_names = params,
-  delim = " "
-) %>% 
-  select(-c(Na, B_t))
-
-
-target_idx <- sample(seq_len(nrow(full_df)), 1)
-
-# target_stats <- pc_df[target_idx, ]
-# sumstat_df <- pc_df[-target_idx, ]
-
-target_stats <- full_df[target_idx, ]
-sumstat_df <- full_df[-target_idx, ]
-
-target_df <- param_df[target_idx, ]
-param_df <-  param_df[-target_idx, ]
-
-# res.gfit.bott <- gfit(target=target_stats, 
-#                       sumstat=sumstat_df,
-#                       statistic=mean, nb.replicate=10)
-# summary(res.gfit.bott)$pvalue
-
-
-dim(target_stats)
-dim(param_df)
-dim(sumstat_df)
-
-res <- abc(target=target_stats,
-           param=param_df,
-           sumstat=sumstat_df, 
-           tol=0.01, 
-           transf=c("log"), 
-           method = "neuralnet", 
-           sizenet = 5)
-
-# res <- abc(target=pc_target,
-#            param=param_df,
-#            sumstat=pc_df,
-#            tol=0.05, transf=c("log"), method="neuralnet")
-
-posts_df <- data.frame(res$adj.values)
-names(posts_df)
-c_name <- "N0"
-
-den_prior <- density(param_df[[c_name]])
-den_post <- density(posts_df[[c_name]])
-
-
-plot(den_prior, 
-     xlim = range(c(range(den_prior$x), range(den_post$x))),
-     ylim = range(c(range(den_prior$y), range(den_post$y))),
-     col = "red"
+option_list <-  list(
+  make_option(c("-s", "--sim_sfs"), type="character", default=NULL, 
+              help="Simulated SFS file. Space delimited", metavar="character"),
+  make_option(c("-p", "--sim_param"), type="character", default=NULL, 
+              help="Simulated file listing true parameters. Space delimited", metavar="character"),
+  make_option(c("-e", "--obs_sfs"), type="character", default=NULL, 
+              help="Observed sfs file, each line contains SFS counts for 4fold, 0fold, and sv categories.", metavar="character"),
+  make_option(c("-c", "--sfs_count"), type="numeric", default=0, 
+              help="Minimum raw count of required for window to be analyzed", metavar="character"),
+  make_option(c("-o", "--out"), type="character", default=NULL, 
+              help="Name of output file containing all posterior draws.", metavar="character")
 )
-abline(v = mean(param_df[[c_name]]), col = "red")
 
-lines(den_post, col = "blue")
-abline(v = target_df[[c_name]])
-abline(v = mean(posts_df[[c_name]]), col = "blue")
-diff(quantile(param_df[[c_name]], c(0.025, 0.975))) > diff(quantile(posts_df[[c_name]], c(0.025, 0.975)))
+opt_parser <-  OptionParser(option_list=option_list)
+opt <-  parse_args(opt_parser)
 
-quantile(param_df[[c_name]], c(0.025, 0.975))
-quantile(posts_df[[c_name]], c(0.025, 0.975))
+n_ind <- 26
+fold_bins <- (1:(n_ind/2))
+to_keep <- c(fold_bins, fold_bins + n_ind*1, fold_bins + n_ind*2)
 
-mean(posts_df[[c_name]] > target_df[[c_name]])
-posts_df <- data.frame(res$adj.values)
-mean(posts_df[[c_name]] > target_df[[c_name]])
+#-----------------------
+#simulated SFS
+#opt$sim_sfs <- "~/Dropbox/NAM_DFE_ABC/pop_sfs.txt" 
+#"~/Dropbox/NAM_DFE_ABC/pop_sfs.txt"
+full_df <- read_delim(opt$sim_sfs, delim = " ", col_names = FALSE) %>%
+  dplyr::select(-ncol(.)) %>% 
+  dplyr::select(all_of(to_keep)) %>% 
+  mutate(sm  = rowSums(.)) %>%
+  ungroup() %>% 
+  rowwise() %>% 
+  mutate_all(.funs = ~ .x / sm) %>% 
+  dplyr::select(-sm)
 
-target_df
+#
+#opt <- NULL
+#opt$obs_sfs <- "~/Dropbox/NAM_DFE_ABC/NAM_all.txt"
+#opt$sfs_count <- 500
+sv_sum <- apply(read_delim(opt$obs_sfs, delim = "\t", col_names = FALSE)[ fold_bins + n_ind*2], 1, sum) > opt$sfs_count
+window_targets <- which(sv_sum)
 
-# i <- sample(1:nrow(param_df), 1)
-# shp <- param_df$sfs1_shape[i]
-# #shp <- 2
-# mn <- param_df$sfs1_mean[i]
-# dst <- rgamma(
-#   n = 100, 
-#   shape = shp, 
-#   scale = mn/shp)
-# hist(
-#   dst
+if (sum(sv_sum) > opt$sfs_count){
+  #observed nam sfs data
+  nam_df <- read_delim(
+    opt$obs_sfs, delim = "\t",
+    col_names = FALSE
+  ) %>%
+    dplyr::select(all_of(to_keep)) %>% 
+    mutate(sm  = rowSums(.)) %>%
+    rowwise() %>% 
+    mutate_all(.funs = ~ .x / sm) %>% 
+    dplyr::select(-sm) %>% 
+    ungroup()
+  
+  params <- 
+    c("Na", "N0", "Nb", "B_t", 
+      "sfs1_shape", "sfs1_mean", "sfs2_shape", "sfs2_mean", 
+      "p_neutral", "p_sfs1")
+  
+  
+  #-----------------------
+  #opt$sim_param <- "~/Dropbox/NAM_DFE_ABC/pop.txt"
+  #~/Dropbox/NAM_DFE_ABC/pop.txt
+  param_df <- read_delim(
+    opt$sim_param,
+    col_names = params,
+    delim = " "
+  ) %>% 
+    dplyr::select(-c(Na, B_t))
+  
+  
+  all_abc_post <- 
+    window_targets %>% 
+    map_df(function(target_idx){
+      #raw
+      target_stats <- nam_df[target_idx, ]
+      res <- abc(target=target_stats,
+                 param=param_df,
+                 sumstat=full_df,
+                 tol=0.05,
+                 transf=c("log"),
+                 method = "neuralnet",
+                 sizenet = 2)
+      
+      posts_df <- data.frame(res$adj.values) 
+      
+      mean_post <- summarise_all(posts_df, .funs = median)
+      prior_low <- summarise_all(param_df, .funs = min)
+      prior_high <- summarise_all(param_df, .funs = max)
+      post_in <- mean(mean_post > prior_low & mean_post < prior_high)
+      
+      if (post_in == 1) {
+        posts_df %>% 
+          mutate(window = target_idx)
+      } else {
+        tibble()
+      }
+    })
+  
+  #-----------------------
+  write_csv(all_abc_post, opt$out)
+} else {
+  print("No windows has sufficient SV data. Writing empty tibble to file")
+  write_csv(tibble(), opt$out)
+}
+
+window_targets
+unique(all_abc_post$window)
+
+# all_abc_post %>% 
+#   ggplot(aes(x = log10(sfs1_mean), group = window)) +
+#   geom_density(alpha = 0.1) +
+#   geom_density(data = param_df, aes(x = log10(sfs1_mean)), inherit.aes = F, colour = "red")
+# 
+# all_abc_post %>% 
+#   ggplot(aes(x = log10(sfs2_mean), group = window)) +
+#   geom_density() +
+#   geom_density(data = param_df, aes(x = log10(sfs2_mean)), inherit.aes = F, colour = "red")
+# 
+# ggplot() +
+#   xlim(0, 0.01) +
+#   geom_density(data = param_df, aes(x = sfs2_mean), inherit.aes = F, fill = "red") +
+#   geom_density(data = all_abc_post, aes(x = sfs2_mean, group = window), colour=alpha("black", 0.05))
+# 
+# ggplot() +
+#   xlim(0, 0.01) +
+#   ylim(0, 250) +
+#   geom_density(data = param_df, aes(x = sfs2_mean), inherit.aes = F, fill = "red") +
+#   geom_density(data = all_abc_post, aes(x = sfs2_mean, group = window), colour=alpha("black", 0.05))
+# 
+# all_abc_post %>%
+#   ggplot(aes(x = log(N0), group = window)) +
+#   geom_density() +
+#   geom_density(data = param_df, aes(x = log(N0)), inherit.aes = F, colour = "red")
+# 
+# all_abc_post %>% 
+#   ggplot(aes(x = Nb, group = window)) +
+#   geom_density() +
+#   geom_density(data = param_df, aes(x = Nb), inherit.aes = F, colour = "red")
+# 
+# 
+# all_abc_post %>% 
+#   filter(window %in% 1:10) %>% 
+#   ggplot(aes(x = sfs2_mean, group = window)) +
+#   geom_density() +
+#   geom_density(data = param_df, aes(x = sfs2_mean), inherit.aes = F, colour = "red")
+# 
+# all_abc_post %>% 
+#   filter(window %in% 1:10) %>% 
+#   ggplot(aes(x = sfs1_mean, group = window)) +
+#   geom_density() +
+#   geom_density(data = param_df, aes(x = sfs1_mean), inherit.aes = F, colour = "red")
+# 
+# 
+# post_window_mean <- 
+#   all_abc_post %>%
+#   group_by(window) %>% 
+#   mutate(pr_dfe2gtdfe1 = sfs1_mean < sfs2_mean) %>% 
+#   summarise_all(.funs = mean)
+# 
+# length(unique(post_window_mean$window))
+# mean(post_window_mean$pr_dfe2gtdfe1 > 0.95)
+# hist(post_window_mean$pr_dfe2gtdfe1, breaks = 100)
+# hist(log(post_window_mean$sfs1_mean, base = 10), breaks = 100)
+# hist(post_window_mean$sfs2_mean, breaks = 100)
+# mean(post_window_mean$sfs2_mean)
+# mean(post_window_mean$sfs1_mean)
+# plot(post_window_mean$sfs1_mean, post_window_mean$sfs2_mean)
+# abline(0,1)
+# plot(post_window_mean$Nb, post_window_mean$N0)
+# hist(post_window_mean$N0, breaks = 100)
+# hist(post_window_mean$Nb, breaks = 100)
+# hist(post_window_mean$p_sfs1, breaks = 100)
+# hist(post_window_mean$p_neutral, breaks = 100)
+# plot(post_window_mean$sfs2_mean)
+# names(posts_df)
+# c_name <- "sfs1_shape"
+# 
+# den_prior <- density(param_df[[c_name]])
+# den_post <- density(posts_df[[c_name]])
+# plot(den_prior, 
+#      xlim = range(c(range(den_prior$x), range(den_post$x))),
+#      ylim = range(c(range(den_prior$y), range(den_post$y))),
+#      col = "red"
 # )
-# sd(dst)
-# mean(dst)
-# abline(v = param_df$sfs1_mean[i])
+# abline(v = mean(param_df[[c_name]]), col = "red")
 # 
-# shp <- 20; mn <- 1e-4
-# skrr <- rgamma(n = 100, shape = shp, scale = mn)
-# hist(skrr)
-# abline(v = shp*mn, col = "blue")
-# abline(v = mean(skrr))
+# lines(den_post, col = "blue")
+# abline(v = mean(posts_df[[c_name]]), col = "blue")
+# diff(quantile(param_df[[c_name]], c(0.025, 0.975))) > diff(quantile(posts_df[[c_name]], c(0.025, 0.975)))
+# 
+# mean(posts_df[["sfs1_mean"]] < posts_df[["sfs2_mean"]])
+# plot(posts_df[["sfs1_mean"]], posts_df[["sfs2_mean"]])
+# abline(0,1)
+# 
+# mean(posts_df[["N0"]] > posts_df[["Nb"]])
+# plot(posts_df[["N0"]], posts_df[["Nb"]])
+# abline(0,1)
+# 
+# hist(posts_df[["Nb"]], breaks = 500)
 # 
 # 
-# 
-# shp <- runif(1, 2, 100)
-# mn <- runif(1, 0, 0.01)
-# dst <- rgamma(
-#   n = 100, 
-#   shape = shp, 
-#   scale = mn/shp)
-# hist(
-#   -dst
-# )
-# sd(dst)
-# mean(dst)
-# abline(v = param_df$sfs1_mean[i])
+# quantile(posts_df[["sfs1_mean"]], c(0.025, 0.975))
+# quantile(posts_df[["sfs2_mean"]], c(0.025, 0.975))
+# quantile(param_df[[c_name]], c(0.025, 0.975))
+# quantile(posts_df[[c_name]], c(0.025, 0.975))
+
