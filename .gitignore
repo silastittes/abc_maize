@@ -1,9 +1,13 @@
 pop.txt
 pop_sfs.txt
+pop200.txt
+pop200_sfs.txt
 paramDF.txt
 pop_capNB.txt
 abc_out/
 .snakemake/
 playground/
+abc_out_badprior/
+abc_out_nofirstbin/
 slurm_log/
 paramDF.txt
