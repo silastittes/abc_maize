@@ -2,9 +2,9 @@ import numpy as np
 import random
 
 #fixed params
-loci = 2000000
+loci = 6000000 ! HOW DOES THIS LOOK FOR REAL DATA??
 sample = 26
-mu = 3e-6
+mu = 3e-7
 rr = 1.6e-6
 
 #priors
