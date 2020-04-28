@@ -1,8 +1,8 @@
 {
     "__default__" :
     {
-        "p" : "bigmemm",
-        "mem" : "4G",
+        "p" : "med2",
+        "mem" : "2G",
         "time" : "5:00:00",
         "cpus-per-task" : 1,
         "name" : "{rule}.{wildcards}",
