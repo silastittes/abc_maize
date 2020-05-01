@@ -2,7 +2,12 @@
 //best median estimate of recombination is r 1.6e-08 
 //n = 3e-6/3e-8 = 100
 //suggested rescaling is (1/2)*(1 - (1-2*r)^100) ~ 1.6e-6
-
+//data/ref/Zm_0fold_per_window.txt
+//   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+//   1187   25116   46502   50795   69210  164542 
+//data/ref/Zm_4fold_per_window.txt
+//   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+//    389    7135   12948   14396   19748   46057
 
 function(numeric)calc_folded(integer nsize, object<Mutation> mut_vec, object<Genome> pops, object<Genome> samples, [logical frequency = T]){
 
@@ -37,37 +42,60 @@ initialize(){
     defineConstant("n_genes", 150);
     defineConstant("intron_size", 300);
     defineConstant("intergenic_size", 30000);
+    defineConstant("fold4bps", 14000);
+    defineConstant("fold0bps", 50000);
+    sv_bps = n_exons * exon_size * n_genes; //HMMMMM????
+    full_mu = mu +  mu_sv; //HMMMMMMMM???????
 
     defineConstant("Tgen", 10*Na + B_t);
     defineConstant("growth_rate", log(N0/Nb)/(B_t - 1));
-    initializeMutationRate(mu);
     initializeMutationType("m1", 0.5, "f", 0.0);
     initializeMutationType("m2", 0.5, "g", sfs1_mean, sfs1_shape);
     initializeMutationType("m3", 0.5, "g", sfs2_mean, sfs2_shape);
+    initializeMutationType("m4", 0.5, "f", 0.0); //HMMMMMMM?????????
     m1.convertToSubstitution = T;
     m3.convertToSubstitution = T;
-    initializeGenomicElementType("g1", c(m1, m2, m3), c(p_neutral, p_sfs1, 1-(p_neutral + p_sfs1)));
+    initializeGenomicElementType("g1", c(m1, m2, m3), c(fold4bps*mu/full_mu, fold0bps*mu/full_mu, sv_bps*mu_sv/full_mu)); //HMMMMM???? 
+    initializeGenomicElementType("g2", m3, 1);
 
     //buffer for genomic element ends
     bp_buff = asInteger((loci  - (intergenic_size + n_exons * exon_size + intron_size * (n_exons - 1)) * n_genes)/2);
 
     base = bp_buff;
+    initializeGenomicElement(g2, 0, base-1); 
+    mu_vec = c(mu_sv);
+    end_vec = c(base-1);
+
     while(base < loci - bp_buff){
         for(j in 1:n_genes){
-            for(i in 1:n_exons){
+            for(i in 1:(n_exons-1)){ //start and end on exon, so sim exon intron pairs
                 initializeGenomicElement(g1, base, base+exon_size);
+                initializeGenomicElement(g2, base+exon_size+1, base+exon_size+intron_size-1);
+                mu_vec = c(mu_vec, full_mu, mu_sv);
+                end_vec = c(end_vec, base+exon_size, base+exon_size+intron_size-1);
                 base = base+exon_size+intron_size;
             }
+            //make one more exon before the intergenic spacer
+            initializeGenomicElement(g1, base, base+exon_size);
+            initializeGenomicElement(g2, base+exon_size+1, base+exon_size+intergenic_size-1);
+            
+            mu_vec = c(mu_vec, full_mu, mu_sv);
+            end_vec = c(end_vec, base+exon_size, base+exon_size+intergenic_size-1);
+             
+            
             base = base+exon_size+intergenic_size;
         }
     }
-    //initializeGenomicElement(g1, 0, loci-1);
+    initializeMutationRate(mu_vec, end_vec);
     initializeRecombinationRate(rr);
 }
 
 1 {
+
+    print("start");
+
     sim.addSubpop("p1", Na); 
-    sim.rescheduleScriptBlock(s1, start=2, end=Tgen-B_t-1);
+    sim.rescheduleScriptBlock(s1, start=1, end=Tgen-B_t-1);
     sim.rescheduleScriptBlock(s2, start=Tgen-B_t, end=Tgen-1);
     sim.rescheduleScriptBlock(s3, start=Tgen, end=Tgen);
 }
@@ -76,7 +104,7 @@ s1 late(){
 
     //print("s1");
     //print(c(growth_rate, sim.generation, p1.individualCount));
-    p1.setSubpopulationSize(Nb);
+    p1.setSubpopulationSize(Na);
 }
 
 s2 late(){
@@ -92,8 +120,7 @@ s2 late(){
 }
 
 s3 late() {
-
-    //print(c(growth_rate, sim.generation, p1.individualCount));
+    
     //print(calc_folded(n_size, m1_vec, allIndividuals, sampledIndividuals, frequency = F));
     //print(calc_folded(n_size, m2_vec, allIndividuals, sampledIndividuals, frequency = F));
     //sim.treeSeqOutput(tree_file);
@@ -110,8 +137,10 @@ s3 late() {
     sfs2 = calc_folded(n_size, m2_vec, allIndividuals, sampledIndividuals, frequency = F);
     sfs3 = calc_folded(n_size, m3_vec, allIndividuals, sampledIndividuals, frequency = F);
 
-    header_line = paste("#Na N0 Nb B_t sfs1_shape sfs1_mean sfs2_shape sfs2_mean p_neutral p_sfs1");
-    data_line = paste(c(Na, N0, Nb, B_t, sfs1_shape, abs(sfs1_mean), sfs2_shape, abs(sfs2_mean), p_neutral, p_sfs1));
+    //header_line = paste("#Na N0 Nb B_t sfs1_shape sfs1_mean sfs2_shape sfs2_mean p_neutral p_sfs1");
+    //data_line = paste(c(Na, N0, Nb, B_t, sfs1_shape, abs(sfs1_mean), sfs2_shape, abs(sfs2_mean), p_neutral, p_sfs1));
+    header_line = paste("#Na N0 Nb B_t sfs1_shape sfs1_mean sfs2_shape sfs2_mean");
+    data_line = paste(c(Na, N0, Nb, B_t, sfs1_shape, abs(sfs1_mean), sfs2_shape, abs(sfs2_mean)));
 
     cat("\n");
     cat(header_line);
