@@ -2,7 +2,7 @@
 
 for i in {1..4}; do
 snakemake --jobs 200 \
-    --batch all=${i}/4 \
+    --batch all=${i}/5 \
     --rerun-incomplete \
     --latency-wait 60 \
     --cluster-config submit.json  \
