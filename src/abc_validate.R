@@ -12,22 +12,21 @@ to_keep <- c(fold_bins, fold_bins + n_ind*1, fold_bins + n_ind*2)
 #var0 <- function(x) var(x) > 0
 
 full_df <- read_delim(
-  "~/Dropbox/NAM_DFE_ABC/pop200_sfs.txt", delim = " ",
+  "NAM_DFE_ABC/pop_sfs.txt", delim = " ",
   col_names = FALSE
 ) %>%
   dplyr::select(-ncol(.)) %>% 
-  #select_if(var0) %>% 
   dplyr::select(all_of(to_keep)) %>% 
   mutate(sm  = rowSums(.)) %>%
-  ungroup() %>%
   rowwise() %>%
   mutate_all(.funs = ~ .x / sm) %>%
-  dplyr::select(-sm)
+  dplyr::select(-sm) %>% 
+  ungroup()
 
 
 pcx <- prcomp(full_df, scale. = F, center = F)
 plot(pcx)
-plot(pcx$x[,1], pcx$x[,2])
+#plot(pcx$x[,1], pcx$x[,2], pch = ".")
 varz <- cumsum((pcx$sdev ^ 2) / sum(pcx$sdev ^ 2)) <= 0.99
 mx_col <- max(c(2,length(varz[varz])))
 pc_df <- data.frame(pcx$x) %>% 
@@ -35,12 +34,11 @@ pc_df <- data.frame(pcx$x) %>%
 
 
 params <- 
-  c("Na", "N0", "Nb", "B_t", 
-    "sfs1_shape", "sfs1_mean", "sfs2_shape", "sfs2_mean", 
-    "p_neutral", "p_sfs1")
+  c("Na", "N0", "Nb", "B_t", "mu_sv",
+    "sfs1_shape", "sfs1_mean", "sfs2_shape", "sfs2_mean")
 
 param_df_full <- read_delim(
-  "~/Dropbox/NAM_DFE_ABC/pop200.txt",
+  "NAM_DFE_ABC/pop.txt",
   col_names = params,
   delim = " "
 ) %>% 
@@ -70,10 +68,11 @@ val_df <-
     res <- abc(target=target_stats,
                param=param_df,
                sumstat=sumstat_df,
-               tol=0.05,
+               tol=0.005,
                transf=c("none"),
                method = "neuralnet",
                sizenet = 2)
+    
     posts_df <- data.frame(res$adj.values)
     
     names(posts_df) %>% 
@@ -87,7 +86,6 @@ val_df <-
         tibble(parameter = c_name, w.in_cred, w.in_prior, prop_gt, diff_sc, var_sc)
       })
   })
-
 
 
 bns <- 30
@@ -133,7 +131,8 @@ v_sc <-
   ylab("")
 
 
-pgt + cred + wpr + v_sc + plot_layout(nrow = 1)
+pgt + cred + wpr + v_sc + plot_layout(nrow = 1) +
+  ggsave("~/Desktop/abc_val.png")
 
 hist(param_df_full$sfs1_shape)
 mean(param_df_full$sfs1_shape)
@@ -158,8 +157,8 @@ param_df <-  param_df_full[-target_idx, ]
 res <- abc(target=target_stats,
            param=param_df,
            sumstat=sumstat_df,
-           tol=0.05,
-           transf=c("log"),
+           tol=0.005,
+           transf=c("none"),
            method = "neuralnet",
            sizenet = 2)
 
@@ -172,7 +171,7 @@ res <- abc(target=target_stats,
 #            sizenet = 5)
 
 posts_df <- data.frame(res$adj.values)
-c_name <- "sfs1_mean"
+c_name <- "sfs2_mean"
 
 den_prior <- density(param_df[[c_name]])
 den_post <- density(posts_df[[c_name]])
@@ -195,6 +194,9 @@ abline(v = mean(param_df[[c_name]]), col = "red")
 lines(den_post, col = "blue")
 abline(v = target_df[[c_name]])
 abline(v = mean(posts_df[[c_name]]), col = "blue")
+
+log(sd(posts_df[[c_name]] / sd(param_df[[c_name]])))
+
 diff(quantile(param_df[[c_name]], c(0.025, 0.975))) > diff(quantile(posts_df[[c_name]], c(0.025, 0.975)))
 
 quantile(param_df[[c_name]], c(0.025, 0.975))

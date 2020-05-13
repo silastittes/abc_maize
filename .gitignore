@@ -7,7 +7,9 @@ pop_capNB.txt
 abc_out/
 .snakemake/
 playground/
+NAM_abc_out/
 abc_out_badprior/
 abc_out_nofirstbin/
 slurm_log/
 paramDF.txt
+src/old/
