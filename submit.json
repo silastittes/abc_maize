@@ -2,7 +2,7 @@
     "__default__" :
     {
         "p" : "med2",
-        "mem" : "2G",
+        "mem" : "3G",
         "time" : "5:00:00",
         "cpus-per-task" : 1,
         "name" : "{rule}.{wildcards}",

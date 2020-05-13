@@ -9,16 +9,16 @@ import random
 #suggested rescaling is (1/2)*(1 - (1-2*r)^67) ~ 1.05e-6
 
 #fixed params
-loci = 6000000 #!!!
+loci = 20000000 #!!!
 sample = 26
 mu = 2e-6
 rr = 1.05e-6
 
 #priors
-n_draws = 10000
+#n_draws = 150000
+n_draws = 90000
 
 #random.seed(214125) #random seed per sim is reported, so no reason to make this stage reproducible afaikt
-#slim -d "dir_out='abc_out/'" -d n_size=50 -d loci=200000 -d mu=3e-6 -d Na=600 -d N0=100 -d Nb=60 -d B_t=2 -d sfs1_shape=2 -d sfs1_mean=-2e-3 -d sfs2_shape=2 -d sfs2_mean=-2e-2 -d p_neutral=0.7 -d p_sfs1=0.2 src/nam_recap.slm
 
 seeds = np.random.randint(0, int(2**62) - 1, n_draws)
 #low informative prior set
@@ -28,34 +28,22 @@ N0 = np.exp(np.random.uniform(np.log(Na), np.log(20*Na), n_draws)).astype(int)
 Nb = np.random.randint(0.05*Na, Na, n_draws) #instant bottleneck pop size
 B_t = int(0.067*Na)  #time after bottleneck
 mu_sv = np.random.uniform(0, 5e-8, n_draws)#.astype(np.half)
-sfs1_mean = -np.random.uniform(0, 0.3, n_draws)#.astype(np.half) #DFE negative only!
+sfs1_mean = -np.random.uniform(0, 0.1, n_draws)#.astype(np.half) #DFE negative only!
 sfs1_shape = np.random.uniform(2, 100, n_draws)#.astype(np.half) #DFE positive only!
-sfs2_mean = -np.random.uniform(0, 0.3, n_draws)#.astype(np.half) #DFE negative only!
+sfs2_mean = -np.random.uniform(0, 0.1, n_draws)#.astype(np.half) #DFE negative only!
 sfs2_shape = np.random.uniform(2, 100, n_draws)#.astype(np.half) #DFE positive only!
 
-#mut_props = np.random.dirichlet((12, 12, 1), n_draws) #proportion of mutation types
-#p_neutral = mut_props[:,0] #only need first two
-#p_sfs1 = mut_props[:,1]
 
-
-#print(sfs2_shape)
 stats_out = []
 
-#params_file = open("abc_out/nam_abc_params.txt", "w")
-#print(f"sample loci Na N0 Nb B_t B_r del_mu gamma_shape gamma_mean", file = params_file)
-#seed=1616882522576_sample=50_loci=200000_mu=3e-06_Na=600_N0=100_Nb=60_Bt=2_sfs1shape=2_sfs1mean=-0.002_sfs2_shape=2_sfs2mean=-0.02_pneutral=0.7_psfs1=0.2_sumstats.txt
-
 for i in range(n_draws):
-    #param_str = f"abc_out/seed__{seeds[i]}_Na__{Na}_N0__{N0[i]}_Nb__{Nb[i]}_Bt__{B_t}_sfs1shape__{sfs1_shape[i]}_sfs1mean__{sfs1_mean[i]}_sfs2shape__{sfs2_shape[i]}_sfs2mean__{sfs2_mean[i]}_pneutral__{p_neutral[i]}_psfs1__{p_sfs1[i]}_sumstats.txt"
     param_str = f"abc_out/seed__{seeds[i]}_Na__{Na}_N0__{N0[i]}_Nb__{Nb[i]}_Bt__{B_t}_musv__{mu_sv[i]}_sfs1shape__{sfs1_shape[i]}_sfs1mean__{sfs1_mean[i]}_sfs2shape__{sfs2_shape[i]}_sfs2mean__{sfs2_mean[i]}_sumstats.txt"
     stats_out.append(param_str)
 
-#slim -d "dir_out='abc_out/'" -d n_size=50 -d loci=200000 -d mu=3e-6 -d Na=600 -d N0=100 -d Nb=60 -d B_t=2 -d sfs1_shape=2 -d sfs1_mean=-2e-3 -d sfs2_shape=2 -d sfs2_mean=-2e-2 -d p_neutral=0.7 -d p_sfs1=0.2 src/nam_recap.slm
 rule all:
     input:
         stats_out
 
-#slim -d n_size=26 -d rr=1.6e-7 -d loci=6000000 -d mu=3e-6 -d mu_sv=1e-9 -d Na=1000 -d N0=1000 -d Nb=100 -d B_t=67 -d sfs1_shape=2 -d sfs1_mean=-0.01 -d sfs2_shape=2 -d sfs2_mean=-0.01 src/nam_exons_rawsfs.slim
 rule run_slim:
     input:
         "src/nam_exons_rawsfs.slim",

@@ -133,7 +133,7 @@ v_sc <-
   ylab("")
 
 
-pgt + cred + wpr + v_sc + plot_layout(nrow = 1)
+pgt + cred + wpr + v_sc + plot_layout(nrow = 1) + ggsave("figures/abc_validate.pdf")
 
 hist(param_df_full$sfs1_shape)
 mean(param_df_full$sfs1_shape)

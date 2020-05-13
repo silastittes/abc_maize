@@ -1,9 +1,3 @@
-//data/ref/Zm_0fold_per_window.txt
-//   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-//   1187   25116   46502   50795   69210  164542 
-//data/ref/Zm_4fold_per_window.txt
-//   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
-//    389    7135   12948   14396   19748   46057
 
 function(numeric)calc_folded(integer nsize, object<Mutation> mut_vec, object<Genome> pops, object<Genome> samples, [logical frequency = T]){
 
@@ -31,15 +25,43 @@ function(numeric)calc_folded(integer nsize, object<Mutation> mut_vec, object<Gen
     return sfs;
 }
 
+/*
+20Mb stats
+data/ref/Zm_0fold_per_window.txt
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+   6249   87021  147290  161825  217104  414149 
+data/ref/Zm_4fold_per_window.txt
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+   1926   24729   41246   45862   61802  116015 
+data/ref/Zm_bps_per_window.txt
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+  15422  225260  363996  400808  532039  975534 
+data/ref/Zm_cds_numbers.txt
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+  1.000   2.000   4.000   5.351   7.000  79.000 
+data/ref/Zm_cds_sizes.txt
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+    1.0    86.0   142.0   263.1   291.0  9171.0 
+data/ref/Zm_genes_per_window.txt
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+   15.0   193.0   289.0   315.7   410.0   750.0 
+data/ref/Zm_intergenic.txt
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+      1    3676   27556   55217   75131 2518983 
+data/ref/Zm_intragenic.txt
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
+      1      98     252   12121    1536 2520778
+*/
+
 initialize(){
     //initializeTreeSeq(simplificationRatio=INF); //off for now.
     defineConstant("n_exons", 4);
     defineConstant("exon_size", 200);
-    defineConstant("n_genes", 150);
+    defineConstant("n_genes", 300);
     defineConstant("intron_size", 300);
     defineConstant("intergenic_size", 30000);
-    defineConstant("fold4bps", 14000);
-    defineConstant("fold0bps", 50000);
+    defineConstant("fold0bps", 147000);
+    defineConstant("fold4bps", 41000);
     sv_bps = n_exons * exon_size * n_genes; //HMMMMM????
     full_mu = mu +  mu_sv; //HMMMMMMMM???????
 
