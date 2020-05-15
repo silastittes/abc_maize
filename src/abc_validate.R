@@ -69,7 +69,7 @@ val_df <-
                param=param_df,
                sumstat=sumstat_df,
                tol=0.005,
-               transf=c("none"),
+               transf=c("log"),
                method = "neuralnet",
                sizenet = 2)
     
@@ -131,8 +131,7 @@ v_sc <-
   ylab("")
 
 
-pgt + cred + wpr + v_sc + plot_layout(nrow = 1) +
-  ggsave("~/Desktop/abc_val.png")
+pgt + cred + wpr + v_sc + plot_layout(nrow = 1) + ggsave("figures/abc_validate.pdf")
 
 hist(param_df_full$sfs1_shape)
 mean(param_df_full$sfs1_shape)
