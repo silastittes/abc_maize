@@ -69,7 +69,7 @@ val_df <-
                param=param_df,
                sumstat=sumstat_df,
                tol=0.005,
-               transf=c("log"),
+               transf=c("none"),
                method = "neuralnet",
                sizenet = 2)
     
@@ -131,7 +131,7 @@ v_sc <-
   ylab("")
 
 
-pgt + cred + wpr + v_sc + plot_layout(nrow = 1) + ggsave("figures/abc_validate.pdf")
+pgt + cred + wpr + v_sc + plot_layout(nrow = 1) + ggsave("NAM_DFE_ABC/figures/abc_validate.pdf")
 
 hist(param_df_full$sfs1_shape)
 mean(param_df_full$sfs1_shape)
@@ -170,7 +170,7 @@ res <- abc(target=target_stats,
 #            sizenet = 5)
 
 posts_df <- data.frame(res$adj.values)
-c_name <- "sfs2_mean"
+c_name <- "N0"
 
 den_prior <- density(param_df[[c_name]])
 den_post <- density(posts_df[[c_name]])

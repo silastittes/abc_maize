@@ -76,15 +76,11 @@ all_abc_post %>%
 all_abc_post %>%
   ggplot(aes(x = N0, group = window)) +
   geom_density(colour=alpha("black", 0.05)) +
-  geom_density(data = param_df, aes(x = N0), inherit.aes = F, colour = "red") +
-  xlim(min(param_df$N0), max(param_df$N0)) +
-  ylim(0, 0.001)
+  geom_density(data = param_df, aes(x = N0), inherit.aes = F, colour = "red") 
 
 
  all_abc_post %>%
   ggplot(aes(x = Nb, group = window)) +
-  xlim(0, 500) +
-  ylim(0, 0.05) + 
   geom_density(colour=alpha("black", 0.05)) +
   geom_density(data = param_df, aes(x = Nb), inherit.aes = F, colour = "red")
  
@@ -105,14 +101,26 @@ post_window_mean <-
 
 
 post_window_mean %>%
-  mutate(dfe_0fold = sfs1_mean*N0, 
-         dfe_sv = sfs2_mean*N0) %>% 
+  mutate(dfe_0fold = sfs1_mean*1000, 
+         dfe_sv = sfs2_mean*1000) %>% 
   dplyr::select(sfs, dfe_0fold, dfe_sv) %>% 
   pivot_longer(cols = c(dfe_0fold, dfe_sv), names_to = "dfe", values_to = "Ns") %>% 
-  ggplot(aes(-log10(Ns), dfe, fill = sfs)) +
+  ggplot(aes(Ns, dfe)) +
   ggridges::geom_density_ridges(alpha = 0.5, rel_min_height = 0.001) +
   ggsave(filename = "~/Desktop/dfe.png")
 
+post_window_mean %>%
+  mutate(dfe_0fold = sfs1_mean, 
+         dfe_sv = sfs2_mean) %>% 
+  dplyr::select(sfs, dfe_0fold, dfe_sv) %>% 
+  pivot_longer(cols = c(dfe_0fold, dfe_sv), names_to = "dfe", values_to = "s") %>% 
+  ggplot(aes(dfe, -s)) +
+  ylab("mean posterior selection coefficient") +
+  xlab("Variant type") +
+  scale_x_discrete(labels = c('0-fold','SV')) +
+  geom_boxplot(outlier.shape = NA) +
+  geom_jitter(width = 0.1, height = 0, alpha = 0.4) +
+  ggsave("NAM_DFE_ABC/figures/dfe.pdf")
 
 
 posts_df %>%
@@ -120,15 +128,15 @@ posts_df %>%
          dfe_sv = sfs2_mean) %>% 
   dplyr::select(dfe_0fold, dfe_sv) %>% 
   pivot_longer(cols = c(dfe_0fold, dfe_sv), names_to = "dfe", values_to = "Ns") %>% 
-  ggplot(aes(Ns, dfe, fill = dfe)) +
+  ggplot(aes(Ns, dfe)) +
   ggridges::geom_density_ridges(alpha = 0.5, rel_min_height = 0.001)
 
 post_window_mean %>%
   mutate(dfe_0fold = sfs1_mean, 
          dfe_sv = sfs2_mean) %>% 
   dplyr::select(sfs, dfe_0fold, dfe_sv) %>% 
-  pivot_longer(cols = c(dfe_0fold, dfe_sv), names_to = "dfe", values_to = "Ns") %>% 
-  ggplot(aes(Ns, dfe, fill = sfs)) +
+  pivot_longer(cols = c(dfe_0fold, dfe_sv), names_to = "dfe", values_to = "s") %>% 
+  ggplot(aes(-s, dfe)) +
   ggridges::geom_density_ridges(alpha = 0.5, rel_min_height = 0.001) +
   ggsave(filename = "~/Desktop/dfe.png")
 
