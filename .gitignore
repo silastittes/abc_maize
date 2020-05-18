@@ -1,4 +1,4 @@
-abc_out_oldpipeline/
+.DS_Store
 pop200.txt
 pop200_sfs.txt
 pop.txt
@@ -10,7 +10,9 @@ abc_out_6Mb/
 log_files.txt
 .snakemake/
 playground/
+NAM_abc_out/
 abc_out_badprior/
 abc_out_nofirstbin/
 slurm_log/
 paramDF.txt
+src/old/
