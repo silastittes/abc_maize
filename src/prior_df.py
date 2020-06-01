@@ -7,7 +7,8 @@ import random
 BUILD DATA FRAME OF PRIOR DRAWS FOR ABC
 """
 
-random.seed(214125) 
+
+np.random.seed(214125)
 
 n_draws = 100000
 
@@ -32,9 +33,9 @@ prior_df = pd.DataFrame({
     'B_t' : int(0.067*Na),  #time after bottleneck
     'mu_sv' : np.random.uniform(0, 5e-8, n_draws), 
     'sfs1_mean' : -np.random.uniform(0, 0.1, n_draws),
-    'sfs1_shape' : np.random.uniform(2, 100, n_draws),
+    'sfs1_shape' : np.random.uniform(0, 10, n_draws),
     'sfs2_mean' : -np.random.uniform(0, 0.1, n_draws),
-    'sfs2_shape' : np.random.uniform(2, 100, n_draws)
+    'sfs2_shape' : np.random.uniform(0, 10, n_draws)
 })
 
 prior_df.to_csv('prior_df.csv')

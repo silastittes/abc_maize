@@ -25,7 +25,7 @@ function(numeric)calc_folded(integer nsize, object<Mutation> mut_vec, object<Gen
     return sfs;
 }
 
-/*
+/* old
 20Mb stats
 data/ref/Zm_0fold_per_window.txt
    Min. 1st Qu.  Median    Mean 3rd Qu.    Max. 
@@ -53,6 +53,33 @@ data/ref/Zm_intragenic.txt
       1      98     252   12121    1536 2520778
 */
 
+
+/* new
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max.
+   8910  117044  203604  221278  298356  541273
+data/ref/Zm_4fold_per_window.txt
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max.
+   2730   33522   57655   63018   83595  154484
+data/ref/Zm_bps_per_window.txt
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max.
+  15767  205059  353975  385046  516058  937883
+data/ref/Zm_cds_numbers.txt
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max.
+  1.000   2.000   4.000   5.575   8.000  79.000
+data/ref/Zm_cds_sizes.txt
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max.
+    2.0    81.0   131.0   240.7   250.0  9171.0
+data/ref/Zm_genes_per_window.txt
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max.
+   14.0   187.0   296.0   321.4   428.0   776.0
+data/ref/Zm_intergenic.txt
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max.
+      1    3376   25920   53917   72750 2328921
+data/ref/Zm_intragenic.txt
+   Min. 1st Qu.  Median    Mean 3rd Qu.    Max.
+      1     100     248   11550    1468 2329212
+*/
+
 initialize(){
     //initializeTreeSeq(simplificationRatio=INF); //off for now.
     defineConstant("n_exons", 4);
@@ -60,20 +87,19 @@ initialize(){
     defineConstant("n_genes", 300);
     defineConstant("intron_size", 300);
     defineConstant("intergenic_size", 30000);
-    defineConstant("fold0bps", 147000);
-    defineConstant("fold4bps", 41000);
-    sv_bps = n_exons * exon_size * n_genes; //HMMMMM????
-    full_mu = mu +  mu_sv; //HMMMMMMMM???????
+    defineConstant("fold0bps", 200000);
+    defineConstant("fold4bps", 57000);
+    sv_bps = n_exons * exon_size * n_genes;
+    full_mu = mu +  mu_sv; 
 
     defineConstant("Tgen", 10*Na + B_t);
     defineConstant("growth_rate", log(N0/Nb)/(B_t - 1));
     initializeMutationType("m1", 0.5, "f", 0.0);
     initializeMutationType("m2", 0.5, "g", sfs1_mean, sfs1_shape);
     initializeMutationType("m3", 0.5, "g", sfs2_mean, sfs2_shape);
-    initializeMutationType("m4", 0.5, "f", 0.0); //HMMMMMMM?????????
     m1.convertToSubstitution = T;
     m3.convertToSubstitution = T;
-    initializeGenomicElementType("g1", c(m1, m2, m3), c(fold4bps*mu/full_mu, fold0bps*mu/full_mu, sv_bps*mu_sv/full_mu)); //HMMMMM???? 
+    initializeGenomicElementType("g1", c(m1, m2, m3), c(fold4bps*mu/full_mu, fold0bps*mu/full_mu, sv_bps*mu_sv/full_mu)); 
     initializeGenomicElementType("g2", m3, 1);
 
     //buffer for genomic element ends
@@ -139,10 +165,6 @@ s2 late(){
 
 s3 late() {
     
-    //print(calc_folded(n_size, m1_vec, allIndividuals, sampledIndividuals, frequency = F));
-    //print(calc_folded(n_size, m2_vec, allIndividuals, sampledIndividuals, frequency = F));
-    //sim.treeSeqOutput(tree_file);
-    //sampledIndividuals.outputVCF(filePath = "test.vcf", simplifyNucleotides=F);    
 
     allIndividuals = sim.subpopulations.genomes;
     sampledIndividuals = sample(allIndividuals, n_size);
@@ -155,8 +177,6 @@ s3 late() {
     sfs2 = calc_folded(n_size, m2_vec, allIndividuals, sampledIndividuals, frequency = F);
     sfs3 = calc_folded(n_size, m3_vec, allIndividuals, sampledIndividuals, frequency = F);
 
-    //header_line = paste("#Na N0 Nb B_t sfs1_shape sfs1_mean sfs2_shape sfs2_mean p_neutral p_sfs1");
-    //data_line = paste(c(Na, N0, Nb, B_t, sfs1_shape, abs(sfs1_mean), sfs2_shape, abs(sfs2_mean), p_neutral, p_sfs1));
     header_line = paste("#Na N0 Nb B_t mu_sv sfs1_shape sfs1_mean sfs2_shape sfs2_mean");
     data_line = paste(c(Na, N0, Nb, B_t, mu_sv, sfs1_shape, abs(sfs1_mean), sfs2_shape, abs(sfs2_mean)));
 
@@ -166,12 +186,7 @@ s3 late() {
     cat(data_line);
     cat("\n");
 
-    //cat(paste(c(n_size, "SFS:", sfs1, sfs2, sfs3, "\n")));
-    //cat(paste(c(n_size, "SFS:", sfs1[0:(size(sfs1)-1)], sfs2[0:(size(sfs2)-1)], sfs3[0:(size(sfs3)-1)], "\n")));
     cat(paste(c(n_size, "SFS:", sfs1[1:(size(sfs1)-1)], sfs2[1:(size(sfs2)-1)], sfs3[1:(size(sfs3)-1)], "\n")));
-    //cat(paste(c(n_size, "SFS:", sfs1[2:(size(sfs1)-1)], sfs2[2:(size(sfs2)-1)], sfs3[2:(size(sfs3)-1)], "\n")));
-    //print(paste(c("sfs2:", sfs2[2:(size(sfs2)-1)])));
-    //print(paste(c("sfs3:", sfs3[2:(size(sfs3)-1)])));
 }
 
 
