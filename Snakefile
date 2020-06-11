@@ -36,9 +36,10 @@ import random
 #sfs2_mean = -np.random.uniform(0, 0.1, n_draws)#.astype(np.half) #DFE negative only!
 #sfs2_shape = np.random.uniform(2, 100, n_draws)#.astype(np.half) #DFE positive only!
 
-prior_df = pd.read_csv('prior_df.csv')
+prior_df = pd.read_csv('prior_df.csv').astype({'Na': 'int64', 'N0': 'int64', 'Nb': 'int64'})
 
-stats_out = [ f"abc_out/seed__{row['seeds']}_Na__{row['Na']}_N0__{row['N0']}_Nb__{row['Nb']}_Bt__{row['B_t']}_musv__{row['mu_sv']}_sfs1shape__{row['sfs1_shape']}_sfs1mean__{row['sfs1_mean']}_sfs2shape__{row['sfs2_shape']}_sfs2mean__{row['sfs2_mean']}_sumstats.txt" for index, row in prior_df.iterrows() ]
+stats_out = [ f"abc_out/seed__{int(row['seeds'])}_Na__{int(row['Na'])}_N0__{int(row['N0'])}_Nb__{int(row['Nb'])}_Bt__{int(row['B_t'])}_musv__{row['mu_sv']}_sfs1shape__{row['sfs1_shape']}_sfs1mean__{row['sfs1_mean']}_sfs2shape__{row['sfs2_shape']}_sfs2mean__{row['sfs2_mean']}_sumstats.txt" for index, row in prior_df.iterrows()]
+
 
 #fixed params
 loci = list(prior_df['loci'])[0]
@@ -53,7 +54,7 @@ rr =  list(prior_df['rr'])[0]
 
 rule all:
     input:
-        #stats_out,
+        stats_out,
         "pop_sfs.txt",
         "pop.txt"
 
@@ -62,7 +63,7 @@ rule run_slim:
         slim = "src/nam_exons_rawsfs.slim",
         df = "src/prior_df.py"
     output:
-        slim_out = temp("abc_out/seed__{seeds}_Na__{Na}_N0__{N0}_Nb__{Nb}_Bt__{B_t}_musv__{mu_sv}_sfs1shape__{sfs1_shape}_sfs1mean__{sfs1_mean}_sfs2shape__{sfs2_shape}_sfs2mean__{sfs2_mean}_sumstats.txt"),
+        slim_out = "abc_out/seed__{seeds}_Na__{Na}_N0__{N0}_Nb__{Nb}_Bt__{B_t}_musv__{mu_sv}_sfs1shape__{sfs1_shape}_sfs1mean__{sfs1_mean}_sfs2shape__{sfs2_shape}_sfs2mean__{sfs2_mean}_sumstats.txt",
     params:
         seeds = "{seeds}" ,
         Na = "{Na}", N0 = "{N0}",Nb = "{Nb}", Bt = "{B_t}",

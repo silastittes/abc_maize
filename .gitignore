@@ -7,6 +7,7 @@ pop_sfs.txt
 paramDF.txt
 pop_capNB.txt
 abc_out/
+abc_out_previous/
 abc_out_6Mb/
 log_files.txt
 .snakemake/
