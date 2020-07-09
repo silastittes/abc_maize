@@ -1,6 +1,6 @@
 #!/bin/bash
 
-for i in {1..5}
+for i in {1..1}
 do
 snakemake --jobs 200 \
     all --batch all=${i}/5 \

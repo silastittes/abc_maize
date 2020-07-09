@@ -18,3 +18,4 @@ abc_out_nofirstbin/
 slurm_log/
 paramDF.txt
 src/old/
+atypical_abc_out/

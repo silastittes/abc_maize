@@ -54,9 +54,9 @@ rr =  list(prior_df['rr'])[0]
 
 rule all:
     input:
-        stats_out,
-        "pop_sfs.txt",
-        "pop.txt"
+        stats_out
+        #"pop_sfs.txt",
+        #"pop.txt"
 
 rule run_slim:
     input:
