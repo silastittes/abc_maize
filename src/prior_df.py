@@ -10,7 +10,7 @@ BUILD DATA FRAME OF PRIOR DRAWS FOR ABC
 
 np.random.seed(214125)
 
-n_draws = 100000
+n_draws = 30000
 #n_draws = 10
 
 
@@ -19,6 +19,8 @@ n_draws = 100000
 #best median estimate of recombination is r 1.6e-08 
 #n = 3e-6/3e-8 = 67
 #suggested rescaling is (1/2)*(1 - (1-2*r)^67) ~ 1.05e-6
+#assume structural variant mutation rate is one of three possibilities
+mu_svs = [1e-10, 1e-9, 1e-8]
 
 Na = 1000
 prior_df = pd.DataFrame({
@@ -32,7 +34,7 @@ prior_df = pd.DataFrame({
     'N0' : np.exp(np.random.uniform(np.log(Na), np.log(20*Na), n_draws)).astype(int),
     'Nb' : np.random.randint(0.01*Na, Na, n_draws), #instant bottleneck pop size
     'B_t' : int(0.067*Na),  #time after bottleneck
-    'mu_sv' : np.random.uniform(0, 5e-8, n_draws), 
+    'mu_sv' : np.random.choice(mu_svs, n_draws), #!!!!
     'sfs1_mean' : -np.random.uniform(0, 0.1, n_draws),
     'sfs1_shape' : np.random.uniform(0, 100, n_draws),
     'sfs2_mean' : -np.random.uniform(0, 0.1, n_draws),
