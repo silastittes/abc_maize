@@ -7,6 +7,7 @@ pop_sfs.txt
 paramDF.txt
 pop_capNB.txt
 abc_out/
+abc_out_previous/
 abc_out_6Mb/
 log_files.txt
 .snakemake/
@@ -17,3 +18,4 @@ abc_out_nofirstbin/
 slurm_log/
 paramDF.txt
 src/old/
+atypical_abc_out/

@@ -7,9 +7,11 @@ import random
 BUILD DATA FRAME OF PRIOR DRAWS FOR ABC
 """
 
-random.seed(214125) 
+
+np.random.seed(214125)
 
 n_draws = 100000
+#n_draws = 10
 
 
 #assume anc. Ne is 1000. median theta ~ 0.008. 4 * 1000 * 2e-6 = 0.008
@@ -28,13 +30,13 @@ prior_df = pd.DataFrame({
     'seeds' : np.random.randint(0, int(2**62) - 1, n_draws),
     'Na' : [Na] * n_draws, #ancestral pop size
     'N0' : np.exp(np.random.uniform(np.log(Na), np.log(20*Na), n_draws)).astype(int),
-    'Nb' : np.random.randint(0.05*Na, Na, n_draws), #instant bottleneck pop size
+    'Nb' : np.random.randint(0.01*Na, Na, n_draws), #instant bottleneck pop size
     'B_t' : int(0.067*Na),  #time after bottleneck
     'mu_sv' : np.random.uniform(0, 5e-8, n_draws), 
     'sfs1_mean' : -np.random.uniform(0, 0.1, n_draws),
-    'sfs1_shape' : np.random.uniform(2, 100, n_draws),
+    'sfs1_shape' : np.random.uniform(0, 100, n_draws),
     'sfs2_mean' : -np.random.uniform(0, 0.1, n_draws),
-    'sfs2_shape' : np.random.uniform(2, 100, n_draws)
+    'sfs2_shape' : np.random.uniform(0, 100, n_draws)
 })
 
 prior_df.to_csv('prior_df.csv')
