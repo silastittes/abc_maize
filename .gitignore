@@ -3,8 +3,6 @@ figures
 .DS_Store
 pop200.txt
 pop200_sfs.txt
-pop.txt
-pop_sfs.txt
 paramDF.txt
 pop_capNB.txt
 abc_out/
@@ -16,6 +14,7 @@ playground/
 NAM_abc_out/
 abc_out_badprior/
 abc_out_nofirstbin/
+abc_out_FIXED/
 slurm_log/
 paramDF.txt
 src/old/

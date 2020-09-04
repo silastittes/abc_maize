@@ -1,9 +1,9 @@
 #!/bin/bash
 
-for i in {1..5}
+for i in {1..20}
 do
 snakemake --jobs 200 \
-    all --batch all=${i}/5 \
+    all --batch all=${i}/20 \
     --rerun-incomplete \
     --latency-wait 60 \
     --cluster-config submit.json  \
